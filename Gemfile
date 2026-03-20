@@ -3,6 +3,8 @@ source 'https://rubygems.org'
 # Specify your gem's dependencies in flickarr.gemspec
 gemspec
 
+gem 'flickr', github: 'cyclotron3k/flickr'
+
 gem 'irb'
 gem 'rake', '~> 13.3'
 gem 'rspec', '~> 3.13'
