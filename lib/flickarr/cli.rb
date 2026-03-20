@@ -104,8 +104,11 @@ module Flickarr
 
       catch(:limit_reached) do
         loop do
-          response = client.photos(user_id: config.user_nsid, page: page)
-          total    = response.total.to_i
+          response    = client.photos(user_id: config.user_nsid, page: page)
+          total       = response.total.to_i
+          total_pages = response.pages.to_i
+
+          puts "Page #{page}/#{total_pages}"
 
           response.each do |list_photo|
             count += 1
@@ -122,7 +125,7 @@ module Flickarr
           config.last_export_page = page
           config.save @config_path
 
-          break if page >= response.pages.to_i
+          break if page >= total_pages
 
           page += 1
         end
