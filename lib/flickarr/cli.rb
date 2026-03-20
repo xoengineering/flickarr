@@ -397,10 +397,16 @@ module Flickarr
 
     def fetch_posts_page client:, config:, media:, page:
       case media
-      when 'photos' then client.flickr.photos.search(user_id: config.user_nsid, media: 'photos', page: page,
-                                                     per_page: 100, extras: Client::PHOTO_EXTRAS)
-      when 'videos' then client.flickr.photos.search(user_id: config.user_nsid, media: 'videos', page: page,
-                                                     per_page: 100, extras: Client::PHOTO_EXTRAS)
+      when 'photos' then client.flickr.photos.search(user_id:  config.user_nsid,
+                                                     media:    'photos',
+                                                     page:     page,
+                                                     per_page: 100,
+                                                     extras:   Client::PHOTO_EXTRAS)
+      when 'videos' then client.flickr.photos.search(user_id:  config.user_nsid,
+                                                     media:    'videos',
+                                                     page:     page,
+                                                     per_page: 100,
+                                                     extras:   Client::PHOTO_EXTRAS)
       else               client.photos(user_id: config.user_nsid, page: page)
       end
     end
@@ -442,6 +448,8 @@ module Flickarr
         f.puts "URL:       https://www.flickr.com/photos/#{username}/#{post_id}/"
         f.puts "Error:     #{error.class}"
         f.puts "Message:   #{error.message}"
+        f.puts
+        f.puts
         f.puts
       end
     end
