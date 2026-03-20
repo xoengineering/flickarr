@@ -1,7 +1,7 @@
 # Flickarr TODO
 
 ## Refactors
-- [ ] Refactor CLI arg parsing to use stdlib optparse
+- [x] Refactor CLI arg parsing to use stdlib optparse
 - [ ] Refactor to Post, with Photo < Post, Video < Post
 
 ## Features
