@@ -49,8 +49,7 @@ module Flickarr
     end
 
     def basename
-      s = slug
-      s ? "#{id}_#{s}" : id
+      [id, slug].compact.join '_'
     end
 
     def date_taken
