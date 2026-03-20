@@ -64,10 +64,20 @@ RSpec.describe Flickarr::Video do
 
     it 'downloads both the video and poster frame' do
       redirect_url = 'https://live.staticflickr.com/video/123/abc/orig.mp4?s=token'
-      status = instance_double(HTTP::Response::Status, redirect?: true)
-      headers = { 'Location' => redirect_url }
-      redirect_response = instance_double(HTTP::Response, status: status, headers: headers)
-      allow(HTTP).to receive(:head).and_return(redirect_response)
+
+      redirect_status = instance_double(HTTP::Response::Status, redirect?: true, success?: false)
+      redirect_headers = { 'Location' => redirect_url }
+      redirect_response = instance_double(HTTP::Response, status: redirect_status, headers: redirect_headers)
+
+      success_status = instance_double(HTTP::Response::Status, redirect?: false, success?: true)
+      success_response = instance_double(HTTP::Response, status: success_status, headers: {})
+
+      allow(HTTP).to receive(:head)
+        .with('https://www.flickr.com/photos/user/123/play/orig/abc/')
+        .and_return(redirect_response)
+      allow(HTTP).to receive(:head)
+        .with(redirect_url)
+        .and_return(success_response)
       allow(Down).to receive(:download)
 
       video.download(archive_path: archive_path)

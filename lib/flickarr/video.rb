@@ -2,6 +2,9 @@ require 'http'
 
 module Flickarr
   class Video < Post
+    # Preferred video sizes, largest to smallest
+    VIDEO_SIZE_PRIORITY = ['Video Original', '1080p', '720p', '700', '360p', '288p', 'iphone_wifi'].freeze
+
     def initialize info:, sizes:, exif: nil
       super
       @extension = 'mp4'
@@ -38,7 +41,22 @@ module Flickarr
     end
 
     def resolve_download_url
-      url      = original_url
+      video_sizes = VIDEO_SIZE_PRIORITY.filter_map do |label|
+        @sizes.find { it.label == label && it.media == 'video' }
+      end
+
+      video_sizes.each do |size|
+        url      = resolve_redirect(size.source)
+        response = HTTP.head(url)
+
+        return url if response.status.success?
+      end
+
+      # Fall back to original_url if nothing worked
+      resolve_redirect original_url
+    end
+
+    def resolve_redirect url
       response = HTTP.head(url)
 
       response.status.redirect? ? response.headers['Location'] : url
