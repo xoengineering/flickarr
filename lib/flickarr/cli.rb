@@ -59,10 +59,11 @@ module Flickarr
         status      = collection.write(archive_path: archive, overwrite: @overwrite)
         path        = File.join archive, 'Collections', collection.dirname
 
+        puts "#{collection.title} (#{count})"
         case status
-        when :created     then puts "Downloaded collection to #{path} (#{count})"
-        when :overwritten then puts "Re-downloaded collection to #{path} (#{count})"
-        when :skipped     then puts "Skipped collection at #{path} (#{count})"
+        when :created     then puts "  Downloaded to #{path}"
+        when :overwritten then puts "  Re-downloaded to #{path}"
+        when :skipped     then puts "  Skipped at #{path}"
         end
       end
 
@@ -93,10 +94,11 @@ module Flickarr
         status    = photo_set.write(archive_path: archive, overwrite: @overwrite)
         path      = File.join archive, 'Sets', photo_set.dirname
 
+        puts "#{photo_set.title} (#{count}/#{total})"
         case status
-        when :created     then puts "Downloaded set to #{path} (#{count}/#{total})"
-        when :overwritten then puts "Re-downloaded set to #{path} (#{count}/#{total})"
-        when :skipped     then puts "Skipped set at #{path} (#{count}/#{total})"
+        when :created     then puts "  Downloaded to #{path}"
+        when :overwritten then puts "  Re-downloaded to #{path}"
+        when :skipped     then puts "  Skipped at #{path}"
         end
       end
 

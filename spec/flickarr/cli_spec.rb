@@ -341,7 +341,7 @@ RSpec.describe Flickarr::CLI do
       allow(collections_api).to receive(:getTree).and_return(tree_response)
 
       cli = described_class.new(['export:collections'], config_path: config_path)
-      expect { cli.run }.to output(/Downloaded collection to/).to_stdout
+      expect { cli.run }.to output(/My Collection.*Downloaded to/m).to_stdout
 
       expect(Dir.exist?(File.join(archive_path, 'Collections', '375727-123_my-collection'))).to be true
     ensure
@@ -399,7 +399,7 @@ RSpec.describe Flickarr::CLI do
       allow(photosets_api).to receive_messages(getList: sets_response, getPhotos: photos_response)
 
       cli = described_class.new(['export:sets'], config_path: config_path)
-      expect { cli.run }.to output(/Downloaded set to/).to_stdout
+      expect { cli.run }.to output(/My Set.*Downloaded to/m).to_stdout
 
       expect(Dir.exist?(File.join(archive_path, 'Sets', '72157718538273371_my-set'))).to be true
     ensure
