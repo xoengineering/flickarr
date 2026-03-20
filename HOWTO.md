@@ -147,6 +147,12 @@ flickarr status
 
 Shows a summary of your archive: how many photos, videos, sets, and collections are downloaded vs. total available.
 
+The upstream totals are fetched from Flickr on first run and cached in your config file. To refresh them:
+
+```sh
+flickarr status --overwrite
+```
+
 ## 11. Utility commands
 
 Open your archive folder in Finder:
