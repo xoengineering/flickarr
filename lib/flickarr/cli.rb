@@ -101,6 +101,7 @@ module Flickarr
       per_page   = 100
       page       = start_page
       count      = (start_page - 1) * per_page
+      run_count  = 0
 
       puts "Starting from page #{page}..." if page > 1
 
@@ -113,7 +114,8 @@ module Flickarr
           puts "Page #{page}/#{total_pages}"
 
           response.each do |list_photo|
-            count += 1
+            count     += 1
+            run_count += 1
 
             if !@overwrite && File.exist?(Photo.file_path_from_list_item(list_photo, archive_path: archive))
               puts "Skipped photo #{list_photo.id} (#{count}/#{total})"
@@ -121,7 +123,7 @@ module Flickarr
               export_single_photo(client: client, photo_id: list_photo.id, archive: archive, count: count, total: total)
             end
 
-            throw(:limit_reached) if @limit && count >= @limit
+            throw(:limit_reached) if @limit && run_count >= @limit
           end
 
           config.last_export_page = page
@@ -133,8 +135,8 @@ module Flickarr
         end
       end
 
-      puts "Reached limit of #{@limit} photos." if @limit && count >= @limit
-      puts "Done. #{count} photos processed."
+      puts "Reached limit of #{@limit} photos." if @limit && run_count >= @limit
+      puts "Done. #{run_count} photos processed this run."
     end
 
     def export_single_photo client:, photo_id:, archive:, count:, total:
