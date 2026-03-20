@@ -363,9 +363,11 @@ module Flickarr
         status = post.write(archive_path: archive, overwrite: @overwrite)
       rescue Flickr::FailedResponse => e
         warn "Error on post #{post_id}: #{e.message}"
+        log_error archive: archive, post_id: post_id, error: e
         return
       rescue Down::Error => e
         warn "Download error on post #{post_id}: #{e.message}"
+        log_error archive: archive, post_id: post_id, error: e
         return
       end
 
@@ -375,6 +377,21 @@ module Flickarr
       when :created     then puts "Downloaded #{post.media} #{post_id} to #{path} (#{count}/#{total})"
       when :overwritten then puts "Re-downloaded #{post.media} #{post_id} to #{path} (#{count}/#{total})"
       when :skipped     then puts "Skipped #{post.media} #{post_id} (#{count}/#{total})"
+      end
+    end
+
+    def log_error archive:, post_id:, error:
+      log_path = File.join archive, 'errors.log'
+      FileUtils.mkdir_p File.dirname(log_path)
+
+      File.open(log_path, 'a') do |f|
+        f.puts '---'
+        f.puts "Time:      #{Time.now.utc.iso8601}"
+        f.puts "Post ID:   #{post_id}"
+        f.puts "Flickr:    https://www.flickr.com/photo.gne?id=#{post_id}"
+        f.puts "Error:     #{error.class}"
+        f.puts "Message:   #{error.message}"
+        f.puts
       end
     end
 
