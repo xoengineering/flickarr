@@ -22,6 +22,7 @@ module Flickarr
       when 'auth'               then run_auth
       when 'config'             then run_config
       when 'config:set'         then run_config_set
+      when 'errors' then run_errors
       when 'export', 'export:posts' then run_export_posts
       when 'export:collections'     then run_export_collections
       when 'export:photo'           then run_export_post
@@ -51,6 +52,18 @@ module Flickarr
           @overwrite = true
         end
       end
+    end
+
+    def run_errors
+      config  = Config.load(@config_path)
+      archive = config.archive_path
+
+      unless archive
+        warn 'Error: No archive path configured. Run `flickarr auth` first.'
+        return
+      end
+
+      puts File.join(archive, 'errors.log')
     end
 
     def run_export_collections
@@ -513,6 +526,7 @@ module Flickarr
           config              Show current configuration
           config <key>        Show a single config value
           config:set          Set configuration values (key=value)
+          errors                Print path to errors.log
           export, export:posts  Export all posts (photos + videos)
           export:collections    Export all collections (groups of sets)
           export:photo <url>    Export a single post by Flickr URL
