@@ -247,6 +247,7 @@ module Flickarr
           config <key>        Show a single config value
           config:set          Set configuration values (key=value)
           export:photo <url>  Export a single photo by Flickr URL
+          export:photos       Export all photos from your timeline
           export:profile      Export Flickr profile to archive
           init                Create config directory and stub config file
 
