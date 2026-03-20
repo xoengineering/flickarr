@@ -21,6 +21,8 @@ module Flickarr
         run_config_set
       when 'export:photo'
         run_export_photo
+      when 'export:photos'
+        run_export_photos
       when 'export:profile'
         run_export_profile
       when 'init'
@@ -79,6 +81,56 @@ module Flickarr
       when :created     then puts "Downloaded photo #{photo_id} to #{path}"
       when :overwritten then puts "Re-downloaded photo #{photo_id} to #{path}"
       when :skipped     then puts "Skipped photo #{photo_id} (already exists at #{path})"
+      end
+    end
+
+    def run_export_photos
+      config = Config.load(@config_path)
+
+      unless config.access_token && config.access_secret && config.user_nsid
+        warn 'Error: Not authenticated. Run `flickarr auth` first.'
+        return
+      end
+
+      client  = Client.new(config)
+      archive = config.archive_path
+      page    = 1
+      count   = 0
+
+      loop do
+        response = client.photos(user_id: config.user_nsid, page: page)
+        total    = response.total.to_i
+
+        response.each do |list_photo|
+          count += 1
+          export_single_photo(client: client, photo_id: list_photo.id, archive: archive, count: count, total: total)
+        end
+
+        break if page >= response.pages.to_i
+
+        page += 1
+      end
+
+      puts "Done. #{count} photos processed."
+    end
+
+    def export_single_photo client:, photo_id:, archive:, count:, total:
+      query = client.photo(id: photo_id)
+
+      begin
+        photo = Photo.new(info: query.info, sizes: query.sizes.size, exif: query.exif)
+      rescue Flickr::FailedResponse => e
+        warn "Error on photo #{photo_id}: #{e.message}"
+        return
+      end
+
+      status = photo.write(archive_path: archive, overwrite: @overwrite)
+      path   = File.join archive, photo.folder_path
+
+      case status
+      when :created     then puts "Downloaded photo #{photo_id} to #{path} (#{count}/#{total})"
+      when :overwritten then puts "Re-downloaded photo #{photo_id} to #{path} (#{count}/#{total})"
+      when :skipped     then puts "Skipped photo #{photo_id} (#{count}/#{total})"
       end
     end
 
