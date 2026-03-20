@@ -24,7 +24,9 @@ module Flickarr
                 :nsid,
                 :occupation,
                 :path_alias,
-                :photo_count,
+                :photos_first_date,
+                :photos_first_date_taken,
+                :photos_count,
                 :photosurl,
                 :pinterest,
                 :profileurl,
@@ -90,35 +92,37 @@ module Flickarr
 
     def to_h
       {
-        avatar_url:   avatar_url,
-        city:         city,
-        country:      country,
-        description:  description,
-        email:        email,
-        facebook:     facebook,
-        first_name:   first_name,
-        hometown:     hometown,
-        iconfarm:     iconfarm,
-        iconserver:   iconserver,
-        instagram:    instagram,
-        ispro:        ispro,
-        join_date:    join_date,
-        last_name:    last_name,
-        location:     location,
-        nsid:         nsid,
-        occupation:   occupation,
-        path_alias:   path_alias,
-        photo_count:  photo_count,
-        photosurl:    photosurl,
-        pinterest:    pinterest,
-        profileurl:   profileurl,
-        realname:     realname,
-        timezone:     timezone,
-        tumblr:       tumblr,
-        twitter:      twitter,
-        upload_count: upload_count,
-        username:     username,
-        website:      website
+        avatar_url:              avatar_url,
+        city:                    city,
+        country:                 country,
+        description:             description,
+        email:                   email,
+        facebook:                facebook,
+        first_name:              first_name,
+        hometown:                hometown,
+        iconfarm:                iconfarm,
+        iconserver:              iconserver,
+        instagram:               instagram,
+        ispro:                   ispro,
+        join_date:               join_date,
+        last_name:               last_name,
+        location:                location,
+        nsid:                    nsid,
+        occupation:              occupation,
+        path_alias:              path_alias,
+        photos_count:            photos_count,
+        photos_first_date:       photos_first_date,
+        photos_first_date_taken: photos_first_date_taken,
+        photosurl:               photosurl,
+        pinterest:               pinterest,
+        profileurl:              profileurl,
+        realname:                realname,
+        timezone:                timezone,
+        tumblr:                  tumblr,
+        twitter:                 twitter,
+        upload_count:            upload_count,
+        username:                username,
+        website:                 website
       }
     end
 
@@ -156,7 +160,9 @@ module Flickarr
       return unless person.respond_to?(:photos)
 
       photos = person.photos
-      @photo_count = photos.respond_to?(:count) ? photos.count.to_i : nil
+      @photos_count            = photos.respond_to?(:count) ? photos.count.to_i : nil
+      @photos_first_date       = photos.respond_to?(:firstdate) ? photos.firstdate.to_s : nil
+      @photos_first_date_taken = photos.respond_to?(:firstdatetaken) ? photos.firstdatetaken.to_s : nil
     end
 
     def profile_dir archive_path

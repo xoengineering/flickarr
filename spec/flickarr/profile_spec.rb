@@ -5,6 +5,10 @@ require 'tmpdir'
 require 'yaml'
 
 RSpec.describe Flickarr::Profile do
+  let(:photos_stats) do
+    double('photos', count: 62_453, firstdate: '1250773205', firstdatetaken: '2006-08-15 18:52:47')
+  end
+
   let(:person_response) do
     double(
       'person',
@@ -16,6 +20,7 @@ RSpec.describe Flickarr::Profile do
       location:     'Portland, OR',
       nsid:         '12345678@N00',
       path_alias:   'testuser',
+      photos:       photos_stats,
       photosurl:    'https://www.flickr.com/photos/testuser/',
       profileurl:   'https://www.flickr.com/people/testuser/',
       realname:     'Test User',
@@ -90,6 +95,18 @@ RSpec.describe Flickarr::Profile do
 
     it 'extracts timezone' do
       expect(profile.timezone).to eq(label: 'Pacific Time', offset: '-08:00')
+    end
+
+    it 'extracts photos_count' do
+      expect(profile.photos_count).to eq(62_453)
+    end
+
+    it 'extracts photos_first_date' do
+      expect(profile.photos_first_date).to eq('1250773205')
+    end
+
+    it 'extracts photos_first_date_taken' do
+      expect(profile.photos_first_date_taken).to eq('2006-08-15 18:52:47')
     end
 
     it 'extracts upload_count' do
