@@ -59,8 +59,8 @@ module Flickarr
         return
       end
 
-      pairs = @args.map { |pair| pair.split('=', 2) }
-      invalid_key = pairs.map(&:first).find { |key| !VALID_CONFIG_KEYS.include?(key.to_sym) }
+      pairs = @args.map { it.split('=', 2) }
+      invalid_key = pairs.map(&:first).find { !VALID_CONFIG_KEYS.include?(it.to_sym) }
 
       if invalid_key
         puts "Unknown config key: #{invalid_key}"
@@ -86,7 +86,7 @@ module Flickarr
 
     def print_config config
       hash      = config.to_h
-      max_width = hash.keys.map { |k| k.to_s.length }.max
+      max_width = hash.keys.map { it.to_s.length }.max
 
       hash.each do |key, value|
         label = key.to_s.ljust max_width
