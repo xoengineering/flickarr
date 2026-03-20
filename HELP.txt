@@ -20,7 +20,7 @@ FLAGS
   --limit N                 Stop after N downloads
   --overwrite               Re-download and overwrite existing files
 
-Commands:
+COMMANDS:
   init                      Create config directory and stub config file
   auth                      Authenticate with Flickr
   config                    Show current configuration

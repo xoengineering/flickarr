@@ -667,6 +667,7 @@ module Flickarr
     def print_help
       help_path = File.expand_path('../../HELP.txt', __dir__)
       puts File.read(help_path)
+      puts
     end
   end
 end
