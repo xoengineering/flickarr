@@ -18,12 +18,25 @@ module Flickarr
         run_config
       when 'config:set'
         run_config_set
+      when 'init'
+        run_init
       else
         print_usage
       end
     end
 
     private
+
+    def run_init
+      if File.exist?(@config_path)
+        puts "Config already exists at #{@config_path}"
+        return
+      end
+
+      config = Config.new
+      config.save @config_path
+      puts "Initialized Flickarr config at #{@config_path}"
+    end
 
     def run_auth
       config = Config.load(@config_path)
@@ -109,6 +122,7 @@ module Flickarr
         Usage: flickarr <command> [options]
 
         Commands:
+          init                Create config directory and stub config file
           auth                Authenticate with Flickr
           config              Show current configuration
           config <key>        Show a single config value

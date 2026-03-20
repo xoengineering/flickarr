@@ -164,5 +164,39 @@ RSpec.describe Flickarr::CLI do
       expect { cli.run }.to output(/api_key/).to_stderr
     end
   end
+
+  describe 'init command' do
+    it 'creates the config directory and stub config file' do
+      dir = File.join(Dir.tmpdir, "flickarr-init-test-#{Process.pid}")
+      path = File.join(dir, 'config.yml')
+
+      cli = described_class.new(['init'], config_path: path)
+      expect { cli.run }.to output(/Initialized/).to_stdout
+
+      expect(File.exist?(path)).to be(true)
+
+      config = Flickarr::Config.load(path)
+      expect(config.api_key).to be_nil
+    ensure
+      FileUtils.rm_rf(dir)
+    end
+
+    it 'does not overwrite an existing config file' do
+      dir = File.join(Dir.tmpdir, "flickarr-init-test-#{Process.pid}")
+      path = File.join(dir, 'config.yml')
+      FileUtils.mkdir_p(dir)
+      config = Flickarr::Config.new
+      config.api_key = 'existing-key'
+      config.save(path)
+
+      cli = described_class.new(['init'], config_path: path)
+      expect { cli.run }.to output(/already exists/).to_stdout
+
+      config = Flickarr::Config.load(path)
+      expect(config.api_key).to eq('existing-key')
+    ensure
+      FileUtils.rm_rf(dir)
+    end
+  end
 end
 # rubocop:enable RSpec/VerifiedDoubles
