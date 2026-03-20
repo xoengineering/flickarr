@@ -53,4 +53,27 @@ RSpec.describe Flickarr::Client do
       expect { described_class.new(config) }.to raise_error(Flickarr::ConfigError, /shared_secret/)
     end
   end
+
+  describe '#person_info' do
+    # Flickr gem uses dynamic method dispatch, so verified doubles won't work
+    let(:flickr_instance) { double('Flickr') } # rubocop:disable RSpec/VerifiedDoubles
+    let(:people_api) { double('people') } # rubocop:disable RSpec/VerifiedDoubles
+    let(:client) do
+      allow(Flickr).to receive(:new).and_return(flickr_instance)
+      described_class.new(config)
+    end
+
+    before do
+      allow(flickr_instance).to receive(:people).and_return(people_api)
+    end
+
+    it 'calls flickr.people.getInfo with the given nsid' do
+      person_response = double('person') # rubocop:disable RSpec/VerifiedDoubles
+      allow(people_api).to receive(:getInfo).with(user_id: '12345@N00').and_return(person_response)
+
+      result = client.person_info(user_id: '12345@N00')
+
+      expect(result).to eq(person_response)
+    end
+  end
 end

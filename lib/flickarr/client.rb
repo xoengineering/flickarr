@@ -15,5 +15,9 @@ module Flickarr
       @flickr.access_token  = config.access_token
       @flickr.access_secret = config.access_secret
     end
+
+    def person_info user_id:
+      flickr.people.getInfo(user_id: user_id)
+    end
   end
 end
