@@ -34,6 +34,27 @@ RSpec.describe Flickarr::Photo do
 
   let(:photo) { described_class.new(info: info_response, sizes: sizes_response) }
 
+  describe '.id_from_url' do
+    it 'extracts photo id from a standard Flickr URL' do
+      url = 'https://www.flickr.com/photos/testuser/3839885270'
+      expect(described_class.id_from_url(url)).to eq('3839885270')
+    end
+
+    it 'extracts photo id from a URL with trailing path segments' do
+      url = 'https://www.flickr.com/photos/testuser/3839885270/in/photostream/'
+      expect(described_class.id_from_url(url)).to eq('3839885270')
+    end
+
+    it 'extracts photo id from a URL with nsid instead of username' do
+      url = 'https://www.flickr.com/photos/12345678@N00/3839885270'
+      expect(described_class.id_from_url(url)).to eq('3839885270')
+    end
+
+    it 'returns nil for non-Flickr URLs' do
+      expect(described_class.id_from_url('https://example.com/photo/123')).to be_nil
+    end
+  end
+
   describe '#id' do
     it 'returns the photo id' do
       expect(photo.id).to eq('3839885270')

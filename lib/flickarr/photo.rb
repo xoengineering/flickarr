@@ -7,6 +7,13 @@ require 'yaml'
 
 module Flickarr
   class Photo
+    FLICKR_URL_PATTERN = %r{\Ahttps?://(?:www\.)?flickr\.com/photos/[^/]+/(\d+)}
+
+    def self.id_from_url url
+      match = url.match FLICKR_URL_PATTERN
+      match&.captures&.first
+    end
+
     attr_reader :description,
                 :extension,
                 :id,
