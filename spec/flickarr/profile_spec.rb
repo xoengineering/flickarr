@@ -77,7 +77,7 @@ RSpec.describe Flickarr::Profile do
 
   describe '#avatar_url' do
     it 'builds the buddy icon URL from iconfarm, iconserver, and nsid' do
-      expect(profile.avatar_url).to eq('https://farm5.staticflickr.com/1234/buddyicons/12345678@N00.jpg')
+      expect(profile.avatar_url).to eq('https://farm5.staticflickr.com/1234/buddyicons/12345678@N00_r.jpg')
     end
 
     context 'when iconserver is 0' do
@@ -110,7 +110,7 @@ RSpec.describe Flickarr::Profile do
     it 'returns a hash of all profile attributes' do
       hash = profile.to_h
 
-      expect(hash[:avatar_url]).to eq('https://farm5.staticflickr.com/1234/buddyicons/12345678@N00.jpg')
+      expect(hash[:avatar_url]).to eq('https://farm5.staticflickr.com/1234/buddyicons/12345678@N00_r.jpg')
       expect(hash[:description]).to eq('A photographer')
       expect(hash[:location]).to eq('Portland, OR')
       expect(hash[:nsid]).to eq('12345678@N00')

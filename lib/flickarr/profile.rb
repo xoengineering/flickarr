@@ -39,7 +39,7 @@ module Flickarr
       if iconserver == '0' || iconfarm.zero?
         DEFAULT_AVATAR_URL
       else
-        "https://farm#{iconfarm}.staticflickr.com/#{iconserver}/buddyicons/#{nsid}.jpg"
+        "https://farm#{iconfarm}.staticflickr.com/#{iconserver}/buddyicons/#{nsid}_r.jpg"
       end
     end
 
