@@ -1,3 +1,5 @@
+require 'optparse'
+
 module Flickarr
   class CLI
     DEFAULT_CONFIG_PATH = File.join(Dir.home, '.flickarr', 'config.yml').freeze
@@ -6,39 +8,45 @@ module Flickarr
 
     def initialize args, config_path: DEFAULT_CONFIG_PATH
       @config_path = config_path
-      @limit       = extract_option(args, '--limit')&.to_i
-      @overwrite   = args.delete('--overwrite') ? true : false
-      @args        = args
+      @limit       = nil
+      @overwrite   = false
+
+      @parser = build_parser
+      @args   = @parser.parse(args)
     end
 
     def run
       command = @args.shift
 
       case command
-      when 'auth'
-        run_auth
-      when 'config'
-        run_config
-      when 'config:set'
-        run_config_set
-      when 'export:collections'
-        run_export_collections
-      when 'export:photo'
-        run_export_photo
-      when 'export:photos'
-        run_export_photos
-      when 'export:profile'
-        run_export_profile
-      when 'export:sets'
-        run_export_sets
-      when 'init'
-        run_init
-      else
-        print_usage
+      when 'auth'               then run_auth
+      when 'config'             then run_config
+      when 'config:set'         then run_config_set
+      when 'export:collections' then run_export_collections
+      when 'export:photo'       then run_export_photo
+      when 'export:photos'      then run_export_photos
+      when 'export:profile'     then run_export_profile
+      when 'export:sets'        then run_export_sets
+      when 'init'               then run_init
+      else                           print_usage
       end
     end
 
     private
+
+    def build_parser
+      OptionParser.new do |opts|
+        opts.banner = 'Usage: flickarr <command> [options]'
+
+        opts.on('--limit N', Integer, 'Stop after N photos (export:photos only)') do |n|
+          @limit = n
+        end
+
+        opts.on('--overwrite', 'Re-download and overwrite existing files') do
+          @overwrite = true
+        end
+      end
+    end
 
     def run_export_collections
       config = Config.load(@config_path)
@@ -342,8 +350,8 @@ module Flickarr
     end
 
     def print_usage
-      puts <<~USAGE
-        Usage: flickarr <command> [options]
+      puts @parser
+      puts <<~COMMANDS
 
         Commands:
           auth                Authenticate with Flickr
@@ -356,19 +364,7 @@ module Flickarr
           export:profile      Export Flickr profile to archive
           export:sets         Export all photosets with photo references
           init                Create config directory and stub config file
-
-        Options:
-          --limit N           Stop after N photos (export:photos only)
-          --overwrite         Re-download and overwrite existing files
-      USAGE
-    end
-
-    def extract_option args, flag
-      index = args.index(flag)
-      return nil unless index
-
-      args.delete_at(index)
-      args.delete_at(index)
+      COMMANDS
     end
   end
 end
