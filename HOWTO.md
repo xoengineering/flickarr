@@ -2,13 +2,23 @@
 
 A step-by-step guide to exporting your Flickr library.
 
-## 1. Install Flickarr
+## 1. Check your Ruby version
+
+Flickarr requires Ruby 4.0 or newer.
+
+```sh
+ruby -v
+```
+
+If you need to install or update Ruby, see https://ruby-lang.org/en/downloads
+
+## 2. Install Flickarr
 
 ```sh
 gem install flickarr
 ```
 
-## 2. Create a Flickr API app
+## 3. Create a Flickr API app
 
 You need your own Flickr API key and secret. Flickarr uses these to authenticate with the Flickr API on your behalf.
 
@@ -23,7 +33,7 @@ You need your own Flickr API key and secret. Flickarr uses these to authenticate
 <!-- TODO: screenshot of Flickr API key creation page -->
 <!-- TODO: screenshot of Flickr API key and secret confirmation page -->
 
-## 3. Initialize Flickarr
+## 4. Initialize Flickarr
 
 This creates a config file at `~/.flickarr/config.yml`.
 
@@ -37,7 +47,7 @@ By default, your archive will be saved to `~/Pictures/Flickarr/`. To use a diffe
 flickarr init /path/to/your/archive
 ```
 
-## 4. Save your API credentials
+## 5. Save your API credentials
 
 ```sh
 flickarr config:set api_key=YOUR_KEY shared_secret=YOUR_SECRET
@@ -49,7 +59,7 @@ Verify they're saved:
 flickarr config
 ```
 
-## 5. Authenticate with Flickr
+## 6. Authenticate with Flickr
 
 ```sh
 flickarr auth
@@ -59,7 +69,7 @@ This starts the OAuth flow:
 
 1. Flickarr prints a URL — open it in your browser
 2. Flickr asks you to authorize the app — click "OK, I'll Authorize It"
-3. Flickr shows you a verification code (9 digits, like `483-221-837`)
+3. Flickr shows you a verification code (9 digits, like `888-675-309`)
 4. Paste the code back into your terminal
 
 <!-- TODO: screenshot of Flickr OAuth authorization page -->
@@ -67,7 +77,7 @@ This starts the OAuth flow:
 
 After authenticating, your access tokens, username, and user ID are saved to the config file. You only need to do this once.
 
-## 6. Export your profile
+## 7. Export your profile
 
 ```sh
 flickarr export:profile
@@ -75,7 +85,7 @@ flickarr export:profile
 
 This downloads your profile metadata (JSON + YAML), avatar image, and account info to `~/Pictures/Flickarr/username/Profile/`.
 
-## 7. Export your photos and videos
+## 8. Export your photos and videos
 
 Export everything:
 
@@ -104,7 +114,7 @@ Export a single post by its Flickr URL:
 flickarr export https://www.flickr.com/photos/username/12345678901
 ```
 
-## 8. Export your albums and collections
+## 9. Export your albums and collections
 
 Albums (sets) are exported as folders of reference files that point to your downloaded photos/videos:
 
@@ -126,7 +136,7 @@ Collections (groups of albums) work the same way:
 flickarr export:collections
 ```
 
-## 9. Check your progress
+## 10. Check your progress
 
 ```sh
 flickarr status
@@ -134,7 +144,7 @@ flickarr status
 
 Shows a summary of your archive: how many photos, videos, sets, and collections are downloaded vs. total available.
 
-## 10. Utility commands
+## 11. Utility commands
 
 Open your archive folder in Finder:
 
