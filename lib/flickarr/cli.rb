@@ -109,7 +109,12 @@ module Flickarr
 
           response.each do |list_photo|
             count += 1
-            export_single_photo(client: client, photo_id: list_photo.id, archive: archive, count: count, total: total)
+
+            if !@overwrite && File.exist?(Photo.file_path_from_list_item(list_photo, archive_path: archive))
+              puts "Skipped photo #{list_photo.id} (#{count}/#{total})"
+            else
+              export_single_photo(client: client, photo_id: list_photo.id, archive: archive, count: count, total: total)
+            end
 
             throw(:limit_reached) if @limit && count >= @limit
           end

@@ -15,6 +15,26 @@ module Flickarr
       match&.captures&.first
     end
 
+    def self.file_path_from_list_item item, archive_path:
+      id        = item.id
+      title     = item.title.to_s
+      slug      = title.slugify
+      basename  = [id, slug.empty? ? nil : slug].compact.join('_')
+      ext       = item.media.to_s == 'video' ? 'mp4' : item.originalformat.to_s
+      date      = compute_date_from_list_item(item)
+      folder    = date.strftime '%Y/%m/%d'
+
+      File.join archive_path, folder, "#{basename}.#{ext}"
+    end
+
+    def self.compute_date_from_list_item item
+      if item.datetakenunknown.to_i.zero?
+        Date.parse item.datetaken
+      else
+        Time.at(item.dateupload.to_i).to_date
+      end
+    end
+
     attr_reader :camera,
                 :description,
                 :exif,

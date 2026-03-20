@@ -189,7 +189,9 @@ RSpec.describe Flickarr::CLI do
       # Stub the paginated list response
       people_api = double('people')
 
-      list_photo = double('list_photo', id: '111')
+      list_photo = double('list_photo', id: '111', title: 'Test Photo', media: 'photo',
+                                       originalformat: 'jpg', datetaken: '2024-03-15 14:30:00',
+                                       datetakenunknown: '0', dateupload: '1710500000')
       list_response = double('list_response', to_a: [list_photo], pages: 1, total: 1)
       allow(list_response).to receive(:each).and_yield(list_photo)
       allow(people_api).to receive(:getPhotos).and_return(list_response)
@@ -263,8 +265,12 @@ RSpec.describe Flickarr::CLI do
       photos_api = double('photos')
       allow(flickr_instance).to receive_messages(people: people_api, photos: photos_api)
 
-      first_photo = double('first_photo', id: '111')
-      second_photo = double('second_photo', id: '222')
+      first_photo = double('first_photo', id: '111', title: 'Photo', media: 'photo',
+                                        originalformat: 'jpg', datetaken: '2024-03-15 14:30:00',
+                                        datetakenunknown: '0', dateupload: '1710500000')
+      second_photo = double('second_photo', id: '222', title: 'Photo', media: 'photo',
+                                         originalformat: 'jpg', datetaken: '2024-03-15 14:30:00',
+                                         datetakenunknown: '0', dateupload: '1710500000')
       list_response = double('list_response', pages: 1, total: 2)
       allow(list_response).to receive(:each).and_yield(first_photo).and_yield(second_photo)
       allow(people_api).to receive(:getPhotos).and_return(list_response)

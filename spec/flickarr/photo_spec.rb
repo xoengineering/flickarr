@@ -62,6 +62,44 @@ tagspace: 'ExifIFD')
 
   let(:photo) { described_class.new(info: info_response, sizes: sizes_response, exif: exif_response) }
 
+  describe '.file_path_from_list_item' do
+    let(:list_item) do
+      double( # rubocop:disable RSpec/VerifiedDoubles
+        'list_item',
+        datetaken:        '2024-03-15 14:30:00',
+        datetakenunknown: '0',
+        dateupload:       '1710500000',
+        id:               '3839885270',
+        media:            'photo',
+        originalformat:   'jpg',
+        title:            'My Cool Cat!'
+      )
+    end
+
+    it 'computes the expected file path' do
+      path = described_class.file_path_from_list_item(list_item, archive_path: '/archive')
+
+      expect(path).to eq('/archive/2024/03/15/3839885270_my-cool-cat.jpg')
+    end
+
+    it 'uses mp4 for videos' do
+      video_item = double( # rubocop:disable RSpec/VerifiedDoubles
+        'video_item',
+        datetaken:        '2024-03-15 14:30:00',
+        datetakenunknown: '0',
+        dateupload:       '1710500000',
+        id:               '111',
+        media:            'video',
+        originalformat:   'jpg',
+        title:            'My Video'
+      )
+
+      path = described_class.file_path_from_list_item(video_item, archive_path: '/archive')
+
+      expect(path).to eq('/archive/2024/03/15/111_my-video.mp4')
+    end
+  end
+
   describe '.id_from_url' do
     it 'extracts photo id from a standard Flickr URL' do
       url = 'https://www.flickr.com/photos/testuser/3839885270'
