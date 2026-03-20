@@ -28,6 +28,7 @@ module Flickarr
       when 'export:profile'     then run_export_profile
       when 'export:sets'        then run_export_sets
       when 'init'               then run_init
+      when 'open'               then run_open
       when 'status'             then run_status
       else                           print_usage
       end
@@ -112,6 +113,18 @@ module Flickarr
       end
 
       puts "Done. #{count} sets processed."
+    end
+
+    def run_open
+      config  = Config.load(@config_path)
+      archive = config.archive_path
+
+      unless archive && Dir.exist?(archive)
+        puts 'No archive found. Run `flickarr init` and `flickarr auth` first.'
+        return
+      end
+
+      system 'open', archive
     end
 
     def run_init
@@ -457,6 +470,7 @@ module Flickarr
           export:profile      Export Flickr profile to archive
           export:sets         Export all photosets with photo references
           init                Create config directory and stub config file
+          open                Open archive folder in Finder
           status              Show archive summary
       COMMANDS
     end
