@@ -17,6 +17,8 @@
 - Add RateLimiter (1 req/sec) to all Flickr API calls
 - Add resume state: saves last page to config, resumes from there on next run
 - Add video post support with poster frame download
+- Fast skip: check file existence from list data before making per-photo API calls
+- Graceful Ctrl+C handling: saves progress and exits cleanly
 - Graceful error handling for invalid photo IDs
 
 ## [0.1.0] - 2026-03-19
