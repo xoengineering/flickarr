@@ -1,6 +1,4 @@
-# frozen_string_literal: true
-
-require_relative "flickarr/version"
+require_relative 'flickarr/version'
 
 module Flickarr
   class Error < StandardError; end
