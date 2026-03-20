@@ -25,12 +25,12 @@ module Flickarr
       when 'config:set'         then run_config_set
       when 'errors' then run_errors
       when 'export', 'export:posts' then run_export_or_post
-      when 'export:collections'     then run_export_collections
+      when 'export:collections'     then run_export_collections_or_one
       when 'export:photo', 'export:video' then run_export_post
       when 'export:photos'          then run_export_posts(media: 'photos')
       when 'export:profile'         then run_export_profile
-      when 'export:sets'            then run_export_sets
-      when 'export:videos'          then run_export_posts(media: 'videos')
+      when 'export:sets', 'export:set', 'export:album' then run_export_sets_or_one
+      when 'export:videos' then run_export_posts(media: 'videos')
       when 'init'               then run_init
       when 'open'               then run_open
       when 'path'               then run_path
@@ -67,6 +67,14 @@ module Flickarr
       puts File.join(archive, '_errors.log')
     end
 
+    def run_export_collections_or_one
+      if @args.first && Collection.id_from_url(@args.first)
+        run_export_single_collection
+      else
+        run_export_collections
+      end
+    end
+
     def run_export_collections
       config = Config.load(@config_path)
 
@@ -98,6 +106,46 @@ module Flickarr
 
       puts "Reached limit of #{@limit} collections." if @limit && count >= @limit
       puts "Done. #{count} collections processed."
+    end
+
+    def run_export_single_collection
+      url           = @args.shift
+      collection_id = Collection.id_from_url(url)
+      config        = Config.load(@config_path)
+      archive       = config.archive_path
+
+      unless config.access_token && config.access_secret && config.user_nsid
+        warn 'Error: Not authenticated. Run `flickarr auth` first.'
+        return
+      end
+
+      client = Client.new(config)
+      tree   = client.collections(user_id: config.user_nsid)
+      match  = tree.find { it.id.include?(collection_id) }
+
+      unless match
+        warn "Error: Collection #{collection_id} not found."
+        return
+      end
+
+      collection = Collection.new(match)
+      status     = collection.write(archive_path: archive, overwrite: @overwrite)
+      path       = File.join archive, 'Collections', collection.dirname
+
+      puts collection.title
+      case status
+      when :created     then puts "  Downloaded to #{path}"
+      when :overwritten then puts "  Re-downloaded to #{path}"
+      when :skipped     then puts "  Skipped at #{path}"
+      end
+    end
+
+    def run_export_sets_or_one
+      if @args.first && PhotoSet.id_from_url(@args.first)
+        run_export_single_set
+      else
+        run_export_sets
+      end
     end
 
     def run_export_sets
@@ -135,6 +183,40 @@ module Flickarr
       end
 
       puts "Done. #{count} sets processed."
+    end
+
+    def run_export_single_set
+      url    = @args.shift
+      set_id = PhotoSet.id_from_url(url)
+      config = Config.load(@config_path)
+
+      unless config.access_token && config.access_secret && config.user_nsid
+        warn 'Error: Not authenticated. Run `flickarr auth` first.'
+        return
+      end
+
+      client  = Client.new(config)
+      archive = config.archive_path
+
+      begin
+        set_data        = client.flickr.photosets.getInfo(photoset_id: set_id, user_id: config.user_nsid)
+        photos_response = client.set_photos(photoset_id: set_id, user_id: config.user_nsid)
+      rescue Flickr::FailedResponse => e
+        warn "Error: #{e.message}"
+        return
+      end
+
+      photo_items = photos_response.respond_to?(:photo) ? photos_response.photo.to_a : []
+      photo_set   = PhotoSet.new(set: set_data, photo_items: photo_items)
+      status      = photo_set.write(archive_path: archive, overwrite: @overwrite)
+      path        = File.join archive, 'Sets', photo_set.dirname
+
+      puts photo_set.title
+      case status
+      when :created     then puts "  Downloaded to #{path}"
+      when :overwritten then puts "  Re-downloaded to #{path}"
+      when :skipped     then puts "  Skipped at #{path}"
+      end
     end
 
     def run_open

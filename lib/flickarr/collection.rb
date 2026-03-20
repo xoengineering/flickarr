@@ -5,6 +5,13 @@ require 'yaml'
 
 module Flickarr
   class Collection
+    COLLECTION_URL_PATTERN = %r{\Ahttps?://(?:www\.)?flickr\.com/photos/[^/]+/collections/(\d+)}
+
+    def self.id_from_url url
+      match = url.to_s.match COLLECTION_URL_PATTERN
+      match&.captures&.first
+    end
+
     attr_reader :description,
                 :iconlarge,
                 :iconsmall,

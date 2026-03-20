@@ -5,6 +5,13 @@ require 'yaml'
 
 module Flickarr
   class PhotoSet
+    SET_URL_PATTERN = %r{\Ahttps?://(?:www\.)?flickr\.com/photos/[^/]+/(?:sets|albums)/(\d+)}
+
+    def self.id_from_url url
+      match = url.to_s.match SET_URL_PATTERN
+      match&.captures&.first
+    end
+
     attr_reader :count_comments,
                 :count_photos,
                 :count_videos,
