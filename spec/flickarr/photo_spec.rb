@@ -6,33 +6,61 @@ require 'tmpdir'
 require 'yaml'
 
 RSpec.describe Flickarr::Photo do
+  let(:dates) do
+    double('dates', taken: '2024-03-15 14:30:00', posted: '1710500000', takenunknown: 0, lastupdate: '1710600000')
+  end
+  let(:owner) { double('owner', nsid: '123@N00', realname: 'Test User', username: 'testuser') }
+  let(:visibility) { double('visibility', isfamily: 0, isfriend: 0, ispublic: 1) }
+  let(:photo_url) { double('url', type: 'photopage', to_s: 'https://www.flickr.com/photos/testuser/3839885270/') }
+  let(:urls) { double('urls', url: [photo_url]) }
+  let(:tags) do
+    double('tags', tag: [
+             double('tag', raw: 'cat', _content: 'cat', machine_tag: 0),
+             double('tag', raw: 'pet', _content: 'pet', machine_tag: 0)
+           ])
+  end
+
   let(:info_response) do
-    dates = double('dates', taken: '2024-03-15 14:30:00', posted: '1710500000', takenunknown: 0)
-    tags = double('tags', tag: [
-                    double('tag', raw: 'cat', _content: 'cat', machine_tag: 0),
-                    double('tag', raw: 'pet', _content: 'pet', machine_tag: 0)
-                  ])
     double(
       'info',
-      id:             '3839885270',
       dates:          dates,
       description:    'This is my cat',
+      id:             '3839885270',
+      license:        '4',
       media:          'photo',
       originalformat: 'jpg',
+      owner:          owner,
       tags:           tags,
-      title:          'My Cool Cat!'
+      title:          'My Cool Cat!',
+      urls:           urls,
+      views:          '2781',
+      visibility:     visibility
     )
   end
 
   let(:sizes_response) do
     [
-      double('size', label: 'Square', source: 'https://live.staticflickr.com/s.jpg', media: 'photo'),
-      double('size', label: 'Large', source: 'https://live.staticflickr.com/b.jpg', media: 'photo'),
-      double('size', label: 'Original', source: 'https://live.staticflickr.com/o.jpg', media: 'photo')
+      double('size', height: 75, label: 'Square', source: 'https://live.staticflickr.com/s.jpg', media: 'photo', width: 75),
+      double('size', height: 768, label: 'Large', source: 'https://live.staticflickr.com/b.jpg', media: 'photo',
+width: 1024),
+      double('size', height: 1200, label: 'Original', source: 'https://live.staticflickr.com/o.jpg', media: 'photo',
+width: 1600)
     ]
   end
 
-  let(:photo) { described_class.new(info: info_response, sizes: sizes_response) }
+  let(:exif_response) do
+    double(
+      'exif_response',
+      camera: 'Canon Digital IXUS 55',
+      exif:   [
+        double('exif_tag', label: 'Make', raw: 'Canon', clean: nil, tag: 'Make', tagspace: 'IFD0'),
+        double('exif_tag', label: 'Exposure', raw: '1/60', clean: '0.017 sec (1/60)', tag: 'ExposureTime',
+tagspace: 'ExifIFD')
+      ]
+    )
+  end
+
+  let(:photo) { described_class.new(info: info_response, sizes: sizes_response, exif: exif_response) }
 
   describe '.id_from_url' do
     it 'extracts photo id from a standard Flickr URL' do
@@ -67,6 +95,35 @@ RSpec.describe Flickarr::Photo do
     end
   end
 
+  describe '#camera' do
+    it 'returns the camera name from EXIF' do
+      expect(photo.camera).to eq('Canon Digital IXUS 55')
+    end
+
+    it 'returns nil when no EXIF data' do
+      photo_no_exif = described_class.new(info: info_response, sizes: sizes_response)
+      expect(photo_no_exif.camera).to be_nil
+    end
+  end
+
+  describe '#exif' do
+    it 'returns parsed EXIF tags' do
+      expect(photo.exif.length).to eq(2)
+      expect(photo.exif.first[:label]).to eq('Make')
+      expect(photo.exif.first[:raw]).to eq('Canon')
+    end
+
+    it 'includes clean values when present' do
+      exposure = photo.exif.last
+      expect(exposure[:clean]).to eq('0.017 sec (1/60)')
+    end
+
+    it 'returns empty array when no EXIF data' do
+      photo_no_exif = described_class.new(info: info_response, sizes: sizes_response)
+      expect(photo_no_exif.exif).to eq([])
+    end
+  end
+
   describe '#slug' do
     it 'returns a slugified version of the title' do
       expect(photo.slug).to eq('my-cool-cat')
@@ -74,16 +131,20 @@ RSpec.describe Flickarr::Photo do
 
     context 'when title is empty' do
       let(:info_response) do
-        dates = double('dates', taken: '2024-03-15 14:30:00', posted: '1710500000', takenunknown: 0)
         double(
           'info',
-          id:             '3839885270',
           dates:          dates,
           description:    '',
+          id:             '3839885270',
+          license:        '0',
           media:          'photo',
           originalformat: 'jpg',
+          owner:          owner,
           tags:           double('tags', tag: []),
-          title:          ''
+          title:          '',
+          urls:           urls,
+          views:          '0',
+          visibility:     visibility
         )
       end
 
@@ -100,16 +161,20 @@ RSpec.describe Flickarr::Photo do
 
     context 'when title is empty' do
       let(:info_response) do
-        dates = double('dates', taken: '2024-03-15 14:30:00', posted: '1710500000', takenunknown: 0)
         double(
           'info',
-          id:             '3839885270',
           dates:          dates,
           description:    '',
+          id:             '3839885270',
+          license:        '0',
           media:          'photo',
           originalformat: 'jpg',
+          owner:          owner,
           tags:           double('tags', tag: []),
-          title:          ''
+          title:          '',
+          urls:           urls,
+          views:          '0',
+          visibility:     visibility
         )
       end
 
@@ -125,18 +190,8 @@ RSpec.describe Flickarr::Photo do
     end
 
     context 'when taken date is unknown' do
-      let(:info_response) do
-        dates = double('dates', taken: '2024-03-15 14:30:00', posted: '1710500000', takenunknown: 1)
-        double(
-          'info',
-          id:             '3839885270',
-          dates:          dates,
-          description:    '',
-          media:          'photo',
-          originalformat: 'jpg',
-          tags:           double('tags', tag: []),
-          title:          'Cat'
-        )
+      let(:dates) do
+        double('dates', taken: '2024-03-15 14:30:00', posted: '1710500000', takenunknown: 1, lastupdate: '1710600000')
       end
 
       it 'falls back to upload date' do
@@ -160,8 +215,10 @@ RSpec.describe Flickarr::Photo do
     context 'when no Original size exists' do
       let(:sizes_response) do
         [
-          double('size', label: 'Square', source: 'https://live.staticflickr.com/s.jpg', media: 'photo'),
-          double('size', label: 'Large', source: 'https://live.staticflickr.com/b.jpg', media: 'photo')
+          double('size', height: 75, label: 'Square', source: 'https://live.staticflickr.com/s.jpg', media: 'photo',
+width: 75),
+          double('size', height: 768, label: 'Large', source: 'https://live.staticflickr.com/b.jpg', media: 'photo',
+width: 1024)
         ]
       end
 
@@ -182,11 +239,41 @@ RSpec.describe Flickarr::Photo do
       hash = photo.to_h
 
       expect(hash[:id]).to eq('3839885270')
-      expect(hash[:date_taken]).to eq('2024-03-15')
+      expect(hash[:dates][:taken]).to eq('2024-03-15 14:30:00')
       expect(hash[:description]).to eq('This is my cat')
       expect(hash[:original_url]).to eq('https://live.staticflickr.com/o.jpg')
       expect(hash[:tags]).to eq(%w[cat pet])
       expect(hash[:title]).to eq('My Cool Cat!')
+    end
+
+    it 'includes owner info' do
+      expect(photo.to_h[:owner]).to eq(nsid: '123@N00', realname: 'Test User', username: 'testuser')
+    end
+
+    it 'includes visibility' do
+      expect(photo.to_h[:visibility]).to eq(isfamily: 0, isfriend: 0, ispublic: 1)
+    end
+
+    it 'includes camera and EXIF' do
+      hash = photo.to_h
+      expect(hash[:camera]).to eq('Canon Digital IXUS 55')
+      expect(hash[:exif].length).to eq(2)
+    end
+
+    it 'includes sizes' do
+      sizes = photo.to_h[:sizes]
+      expect(sizes.length).to eq(3)
+      expect(sizes.last[:label]).to eq('Original')
+      expect(sizes.last[:width]).to eq(1600)
+    end
+
+    it 'includes post URL' do
+      expect(photo.to_h[:urls]).to eq('photopage' => 'https://www.flickr.com/photos/testuser/3839885270/')
+    end
+
+    it 'includes license and views' do
+      expect(photo.to_h[:license]).to eq('4')
+      expect(photo.to_h[:views]).to eq('2781')
     end
   end
 
@@ -220,6 +307,7 @@ RSpec.describe Flickarr::Photo do
       data = JSON.parse(File.read(json_path), symbolize_names: true)
       expect(data[:id]).to eq('3839885270')
       expect(data[:title]).to eq('My Cool Cat!')
+      expect(data[:camera]).to eq('Canon Digital IXUS 55')
     end
   end
 

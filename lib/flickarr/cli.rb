@@ -63,7 +63,8 @@ module Flickarr
       client  = Client.new(config)
       info    = client.photo_info(photo_id: photo_id)
       sizes   = client.photo_sizes(photo_id: photo_id)
-      photo   = Photo.new(info: info, sizes: sizes.size)
+      exif    = client.photo_exif(photo_id: photo_id)
+      photo   = Photo.new(info: info, sizes: sizes.size, exif: exif)
       archive = config.archive_path
 
       photo.write(archive_path: archive)

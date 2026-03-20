@@ -190,22 +190,33 @@ RSpec.describe Flickarr::CLI do
       photos_api = double('photos')
       allow(flickr_instance).to receive(:photos).and_return(photos_api)
 
-      dates = double('dates', taken: '2024-03-15 14:30:00', posted: '1710500000', takenunknown: 0)
+      dates = double('dates', taken: '2024-03-15 14:30:00', posted: '1710500000', takenunknown: 0, lastupdate: '1710600000')
+      owner = double('owner', nsid: '123@N00', realname: 'Test User', username: 'testuser')
+      visibility = double('visibility', isfamily: 0, isfriend: 0, ispublic: 1)
+      photo_url = double('url', type: 'photopage', to_s: 'https://www.flickr.com/photos/testuser/3839885270/')
       info_response = double(
         'info',
-        id:             '3839885270',
         dates:          dates,
         description:    'A cat',
+        id:             '3839885270',
+        license:        '0',
         media:          'photo',
         originalformat: 'jpg',
+        owner:          owner,
         tags:           double('tags', tag: []),
-        title:          'My Cat'
+        title:          'My Cat',
+        urls:           double('urls', url: [photo_url]),
+        views:          '0',
+        visibility:     visibility
       )
-      original = double('size', label: 'Original', source: 'https://live.staticflickr.com/o.jpg', media: 'photo')
+      original = double('size', height: 1200, label: 'Original', source: 'https://live.staticflickr.com/o.jpg',
+                                media: 'photo', width: 1600)
       sizes_response = double('sizes', size: [original])
+      exif_response = double('exif_response', camera: 'Canon', exif: [])
 
       allow(photos_api).to receive(:getInfo).with(photo_id: '3839885270').and_return(info_response)
       allow(photos_api).to receive(:getSizes).with(photo_id: '3839885270').and_return(sizes_response)
+      allow(photos_api).to receive(:getExif).with(photo_id: '3839885270').and_return(exif_response)
       allow(Down).to receive(:download)
 
       url = 'https://www.flickr.com/photos/testuser/3839885270'
