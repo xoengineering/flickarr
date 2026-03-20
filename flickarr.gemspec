@@ -36,4 +36,5 @@ Gem::Specification.new do |spec|
   spec.add_dependency 'down', '~> 5.4'
   spec.add_dependency 'flickr', '~> 2.1'
   spec.add_dependency 'http', '~> 5.2'
+  spec.add_dependency 'slugify', '~> 1.0'
 end
