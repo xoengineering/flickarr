@@ -231,6 +231,11 @@ module Flickarr
       total ? "#{local} / #{total}" : local.to_s
     end
 
+    def post_exists_on_disk? archive:, post_id:
+      Dir.glob(File.join(archive, '**', "#{post_id}_*")).any? ||
+        Dir.glob(File.join(archive, '**', "#{post_id}.*")).any?
+    end
+
     def count_media_files archive, extensions
       pattern = File.join(archive, '**', "*.{#{extensions.join(',')}}")
       Dir.glob(pattern).count do |path|
@@ -278,7 +283,13 @@ module Flickarr
         return
       end
 
-      config = Config.load(@config_path)
+      config  = Config.load(@config_path)
+      archive = config.archive_path
+
+      if !@overwrite && archive && post_exists_on_disk?(archive: archive, post_id: post_id)
+        puts "Skipped #{post_id} (already exists)"
+        return
+      end
 
       unless config.access_token && config.access_secret
         warn 'Error: Not authenticated. Run `flickarr auth` first.'
@@ -295,9 +306,8 @@ module Flickarr
         return
       end
 
-      archive = config.archive_path
-      status  = post.write(archive_path: archive, overwrite: @overwrite)
-      path    = File.join archive, post.folder_path
+      status = post.write(archive_path: archive, overwrite: @overwrite)
+      path = File.join archive, post.folder_path
 
       case status
       when :created     then puts "Downloaded #{post.media} #{post_id} to #{path}"
