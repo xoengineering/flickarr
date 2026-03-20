@@ -467,8 +467,8 @@ RSpec.describe Flickarr::CLI do
       cli = described_class.new(['export:profile'], config_path: config_path)
       expect { cli.run }.to output(/Downloaded profile to/).to_stdout
 
-      expect(File.exist?(File.join(archive_path, '_profile', 'profile.json'))).to be true
-      expect(File.exist?(File.join(archive_path, '_profile', 'profile.yaml'))).to be true
+      expect(File.exist?(File.join(archive_path, 'profile', 'profile.json'))).to be true
+      expect(File.exist?(File.join(archive_path, 'profile', 'profile.yaml'))).to be true
     ensure
       FileUtils.rm_rf(dir)
     end

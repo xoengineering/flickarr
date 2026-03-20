@@ -154,7 +154,7 @@ module Flickarr
       archive = config.archive_path
 
       status      = profile.write(archive_path: archive, overwrite: @overwrite)
-      profile_dir = File.join archive, '_profile'
+      profile_dir = File.join archive, 'profile'
 
       case status
       when :created     then puts "Downloaded profile to #{profile_dir}"

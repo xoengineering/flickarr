@@ -223,7 +223,7 @@ RSpec.describe Flickarr::Profile do
 
   describe '#write_json' do
     let(:archive_path) { Dir.mktmpdir('flickarr-profile-test') }
-    let(:profile_dir) { File.join(archive_path, '_profile') }
+    let(:profile_dir) { File.join(archive_path, 'profile') }
 
     after { FileUtils.rm_rf archive_path }
 
@@ -244,7 +244,7 @@ RSpec.describe Flickarr::Profile do
 
   describe '#write_yaml' do
     let(:archive_path) { Dir.mktmpdir('flickarr-profile-test') }
-    let(:profile_dir) { File.join(archive_path, '_profile') }
+    let(:profile_dir) { File.join(archive_path, 'profile') }
 
     after { FileUtils.rm_rf archive_path }
 
@@ -265,7 +265,7 @@ RSpec.describe Flickarr::Profile do
 
   describe '#download_avatar' do
     let(:archive_path) { Dir.mktmpdir('flickarr-profile-test') }
-    let(:profile_dir) { File.join(archive_path, '_profile') }
+    let(:profile_dir) { File.join(archive_path, 'profile') }
 
     after { FileUtils.rm_rf archive_path }
 
@@ -283,7 +283,7 @@ RSpec.describe Flickarr::Profile do
 
   describe '#write' do
     let(:archive_path) { Dir.mktmpdir('flickarr-profile-test') }
-    let(:profile_dir) { File.join(archive_path, '_profile') }
+    let(:profile_dir) { File.join(archive_path, 'profile') }
 
     before { allow(Down).to receive(:download) }
 
