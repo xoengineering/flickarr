@@ -68,9 +68,20 @@ module Flickarr
       end
 
       config = Config.load(@config_path)
-      pairs.each { |key, value| config.public_send(:"#{key}=", value) }
+      pairs.each { |key, value| set_config_attr(config, key, value) }
       config.save(@config_path)
       print_config(config)
+    end
+
+    def set_config_attr config, key, value
+      case key
+      when 'api_key'       then config.api_key = value
+      when 'shared_secret' then config.shared_secret = value
+      when 'access_token'  then config.access_token = value
+      when 'access_secret' then config.access_secret = value
+      when 'user_nsid'     then config.user_nsid = value
+      when 'username'      then config.username = value
+      end
     end
 
     def print_config config
