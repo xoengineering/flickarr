@@ -18,6 +18,8 @@ module Flickarr
         run_config
       when 'config:set'
         run_config_set
+      when 'export:photo'
+        run_export_photo
       when 'export:profile'
         run_export_profile
       when 'init'
@@ -40,6 +42,32 @@ module Flickarr
       config.library_path = File.expand_path(library_path) if library_path
       config.save @config_path
       puts "Initialized Flickarr config at #{@config_path}"
+    end
+
+    def run_export_photo
+      url = @args.shift
+      photo_id = Photo.id_from_url(url.to_s)
+
+      unless photo_id
+        warn 'Error: Could not extract photo ID from URL.'
+        return
+      end
+
+      config = Config.load(@config_path)
+
+      unless config.access_token && config.access_secret
+        warn 'Error: Not authenticated. Run `flickarr auth` first.'
+        return
+      end
+
+      client  = Client.new(config)
+      info    = client.photo_info(photo_id: photo_id)
+      sizes   = client.photo_sizes(photo_id: photo_id)
+      photo   = Photo.new(info: info, sizes: sizes.size)
+      archive = config.archive_path
+
+      photo.write(archive_path: archive)
+      puts "Exported photo #{photo_id} to #{File.join(archive, photo.folder_path)}"
     end
 
     def run_export_profile

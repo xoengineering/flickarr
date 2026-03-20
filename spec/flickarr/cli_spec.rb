@@ -165,6 +165,80 @@ RSpec.describe Flickarr::CLI do
     end
   end
 
+  describe 'export:photo command' do
+    it 'exports a single photo by Flickr URL' do
+      dir = File.join(Dir.tmpdir, "flickarr-cli-test-#{Process.pid}")
+      config_path = File.join(dir, 'config.yml')
+      archive_path = File.join(dir, 'library', 'testuser')
+      FileUtils.mkdir_p(dir)
+
+      config = Flickarr::Config.new
+      config.api_key = 'test-key'
+      config.shared_secret = 'test-secret'
+      config.access_token = 'token'
+      config.access_secret = 'secret'
+      config.user_nsid = '123@N00'
+      config.username = 'testuser'
+      config.library_path = File.join(dir, 'library')
+      config.save(config_path)
+
+      flickr_instance = double('Flickr')
+      allow(Flickr).to receive(:new).and_return(flickr_instance)
+      allow(flickr_instance).to receive(:access_token=)
+      allow(flickr_instance).to receive(:access_secret=)
+
+      photos_api = double('photos')
+      allow(flickr_instance).to receive(:photos).and_return(photos_api)
+
+      dates = double('dates', taken: '2024-03-15 14:30:00', posted: '1710500000', takenunknown: 0)
+      info_response = double(
+        'info',
+        id:             '3839885270',
+        dates:          dates,
+        description:    'A cat',
+        media:          'photo',
+        originalformat: 'jpg',
+        tags:           double('tags', tag: []),
+        title:          'My Cat'
+      )
+      original = double('size', label: 'Original', source: 'https://live.staticflickr.com/o.jpg', media: 'photo')
+      sizes_response = double('sizes', size: [original])
+
+      allow(photos_api).to receive(:getInfo).with(photo_id: '3839885270').and_return(info_response)
+      allow(photos_api).to receive(:getSizes).with(photo_id: '3839885270').and_return(sizes_response)
+      allow(Down).to receive(:download)
+
+      url = 'https://www.flickr.com/photos/testuser/3839885270'
+      cli = described_class.new(['export:photo', url], config_path: config_path)
+      expect { cli.run }.to output(/Exported photo 3839885270/).to_stdout
+
+      expect(File.exist?(File.join(archive_path, '2024/03/15', '3839885270_my-cat.json'))).to be true
+      expect(File.exist?(File.join(archive_path, '2024/03/15', '3839885270_my-cat.yaml'))).to be true
+    ensure
+      FileUtils.rm_rf(dir)
+    end
+
+    it 'reports error for invalid URL' do
+      dir = File.join(Dir.tmpdir, "flickarr-cli-test-#{Process.pid}")
+      config_path = File.join(dir, 'config.yml')
+      FileUtils.mkdir_p(dir)
+
+      config = Flickarr::Config.new
+      config.api_key = 'test-key'
+      config.shared_secret = 'test-secret'
+      config.access_token = 'token'
+      config.access_secret = 'secret'
+      config.user_nsid = '123@N00'
+      config.username = 'testuser'
+      config.save(config_path)
+
+      cli = described_class.new(['export:photo', 'https://example.com/bad'], config_path: config_path)
+      expect { cli.run }.to output(/Could not extract photo ID/).to_stderr
+    ensure
+      FileUtils.rm_rf(dir)
+    end
+  end
+
   describe 'export:profile command' do
     it 'fetches profile info and writes to archive' do
       dir = File.join(Dir.tmpdir, "flickarr-cli-test-#{Process.pid}")
