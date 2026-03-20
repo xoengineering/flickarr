@@ -10,6 +10,7 @@
 - Add `flickarr export:sets` to export photosets with photo reference files
 - Add `--overwrite` flag to re-download existing files; default skips them
 - Add `flickarr init` command to create config directory and stub file
+- Add `flickarr status` command showing archive summary
 - Add Client with query object API: `client.photo(id:).info`, `client.profile(user_id:).info`
 - Add Config for loading/saving credentials with env var fallback
 - Add Error class hierarchy (AuthError, ApiError, ConfigError, DownloadError)

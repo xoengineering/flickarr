@@ -427,6 +427,7 @@ module Flickarr
           export:profile      Export Flickr profile to archive
           export:sets         Export all photosets with photo references
           init                Create config directory and stub config file
+          status              Show archive summary
       COMMANDS
     end
   end
