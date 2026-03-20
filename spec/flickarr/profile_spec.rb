@@ -230,5 +230,24 @@ RSpec.describe Flickarr::Profile do
       expect(File.exist?(File.join(profile_dir, 'profile.yaml'))).to be true
       expect(Down).to have_received(:download)
     end
+
+    it 'skips when profile.json already exists' do
+      FileUtils.mkdir_p profile_dir
+      File.write File.join(profile_dir, 'profile.json'), 'existing'
+
+      profile.write(archive_path: archive_path)
+
+      expect(Down).not_to have_received(:download)
+    end
+
+    it 'overwrites when overwrite: true' do
+      FileUtils.mkdir_p profile_dir
+      File.write File.join(profile_dir, 'profile.json'), 'existing'
+
+      profile.write(archive_path: archive_path, overwrite: true)
+
+      expect(Down).to have_received(:download)
+      expect(File.exist?(File.join(profile_dir, 'profile.yaml'))).to be true
+    end
   end
 end

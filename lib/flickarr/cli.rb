@@ -4,8 +4,9 @@ module Flickarr
     VALID_CONFIG_KEYS = %i[access_secret access_token api_key library_path shared_secret user_nsid username].freeze
 
     def initialize args, config_path: DEFAULT_CONFIG_PATH
-      @args = args
       @config_path = config_path
+      @overwrite   = args.delete('--overwrite') ? true : false
+      @args        = args
     end
 
     def run
@@ -65,7 +66,7 @@ module Flickarr
       photo   = Photo.new(info: query.info, sizes: query.sizes.size, exif: query.exif)
       archive = config.archive_path
 
-      photo.write(archive_path: archive)
+      photo.write(archive_path: archive, overwrite: @overwrite)
       puts "Exported photo #{photo_id} to #{File.join(archive, photo.folder_path)}"
     end
 
@@ -82,7 +83,7 @@ module Flickarr
       profile  = Profile.new(person)
       archive  = config.archive_path
 
-      profile.write(archive_path: archive)
+      profile.write(archive_path: archive, overwrite: @overwrite)
       puts "Exported profile to #{File.join(archive, '_profile')}"
     end
 

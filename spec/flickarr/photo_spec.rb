@@ -394,6 +394,28 @@ width: 1024)
       expect(File.exist?(File.join(photo_dir, '3839885270_my-cool-cat.yaml'))).to be true
       expect(Down).to have_received(:download)
     end
+
+    it 'skips when image file already exists' do
+      image_path = File.join(photo_dir, '3839885270_my-cool-cat.jpg')
+      FileUtils.mkdir_p photo_dir
+      File.write image_path, 'existing'
+
+      photo.write(archive_path: archive_path)
+
+      expect(Down).not_to have_received(:download)
+    end
+
+    it 'overwrites when overwrite: true' do
+      image_path = File.join(photo_dir, '3839885270_my-cool-cat.jpg')
+      FileUtils.mkdir_p photo_dir
+      File.write image_path, 'existing'
+
+      photo.write(archive_path: archive_path, overwrite: true)
+
+      expect(Down).to have_received(:download)
+      expect(File.exist?(File.join(photo_dir, '3839885270_my-cool-cat.json'))).to be true
+      expect(File.exist?(File.join(photo_dir, '3839885270_my-cool-cat.yaml'))).to be true
+    end
   end
 end
 # rubocop:enable RSpec/VerifiedDoubles

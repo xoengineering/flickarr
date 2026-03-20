@@ -70,8 +70,11 @@ module Flickarr
       }
     end
 
-    def write archive_path:
-      dir = profile_dir archive_path
+    def write archive_path:, overwrite: false
+      dir        = profile_dir archive_path
+      json_path  = File.join dir, 'profile.json'
+
+      return if File.exist?(json_path) && !overwrite
 
       FileUtils.mkdir_p dir
       write_json dir: dir

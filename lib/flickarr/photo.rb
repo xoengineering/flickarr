@@ -112,8 +112,11 @@ module Flickarr
       }
     end
 
-    def write archive_path:
-      dir = photo_dir archive_path
+    def write archive_path:, overwrite: false
+      dir        = photo_dir archive_path
+      image_path = File.join dir, "#{basename}.#{extension}"
+
+      return if File.exist?(image_path) && !overwrite
 
       FileUtils.mkdir_p dir
       download archive_path: archive_path
