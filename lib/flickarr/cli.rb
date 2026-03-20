@@ -177,7 +177,7 @@ module Flickarr
         return
       end
 
-      fetch_and_cache_totals(config) unless config.total_photos
+      fetch_and_cache_totals(config) if @overwrite || !config.total_photos
 
       profile_exists   = File.exist?(File.join(archive, 'Profile', 'profile.json'))
       photo_count      = count_media_files(archive, %w[jpg jpeg png gif tiff])
