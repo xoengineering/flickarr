@@ -8,13 +8,12 @@ Gem::Specification.new do |spec|
   spec.authors = ["Shane Becker"]
   spec.email = ["veganstraightedge@gmail.com"]
 
-  spec.summary = "TODO: Write a short summary, because RubyGems requires one."
-  spec.description = "TODO: Write a longer description or delete this line."
+  spec.summary = "Export and archive your Flickr photo library"
+  spec.description = "Flickarr exports and archives your Flickr photo library — photos, metadata, tags, albums, and more."
   spec.homepage = "https://github.com/veganstraightedge/flickarr"
   spec.license = "MIT"
   spec.required_ruby_version = ">= 3.2.0"
 
-  spec.metadata["allowed_push_host"] = "TODO: Set to your gem server 'https://example.com'"
   spec.metadata["homepage_uri"] = spec.homepage
   spec.metadata["source_code_uri"] = "https://github.com/veganstraightedge/flickarr"
   spec.metadata["changelog_uri"] = "https://github.com/veganstraightedge/flickarr/blob/main/CHANGELOG.md"
