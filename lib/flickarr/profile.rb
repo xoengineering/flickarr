@@ -1,3 +1,8 @@
+require 'down'
+require 'fileutils'
+require 'json'
+require 'yaml'
+
 module Flickarr
   class Profile
     DEFAULT_AVATAR_URL = 'https://www.flickr.com/images/buddyicon.gif'.freeze
@@ -38,6 +43,16 @@ module Flickarr
       end
     end
 
+    def download_avatar archive_path:
+      dir      = profile_dir archive_path
+      ext      = File.extname avatar_url
+      dest     = File.join dir, "avatar#{ext}"
+      tempfile = Down.download avatar_url
+
+      FileUtils.mkdir_p dir
+      FileUtils.mv tempfile.path, dest
+    end
+
     def to_h
       {
         avatar_url:  avatar_url,
@@ -54,6 +69,34 @@ module Flickarr
         timezone:    timezone,
         username:    username
       }
+    end
+
+    def write archive_path:
+      dir = profile_dir archive_path
+
+      FileUtils.mkdir_p dir
+      write_json dir: dir
+      write_yaml dir: dir
+      download_avatar archive_path: archive_path
+    end
+
+    def write_json dir:
+      FileUtils.mkdir_p dir
+      json = JSON.pretty_generate to_h
+      File.write File.join(dir, 'profile.json'), json
+    end
+
+    def write_yaml dir:
+      FileUtils.mkdir_p dir
+      hash = to_h.transform_keys(&:to_s)
+      yaml = YAML.dump hash
+      File.write File.join(dir, 'profile.yaml'), yaml
+    end
+
+    private
+
+    def profile_dir archive_path
+      File.join archive_path, '_profile'
     end
   end
 end

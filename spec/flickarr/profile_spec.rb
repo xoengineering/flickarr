@@ -1,20 +1,26 @@
+require 'down'
+require 'json'
+require 'tempfile'
+require 'tmpdir'
+require 'yaml'
+
 RSpec.describe Flickarr::Profile do
   let(:person_response) do
     double( # rubocop:disable RSpec/VerifiedDoubles
       'person',
-      id:          '12345678@N00',
-      nsid:        '12345678@N00',
-      username:    'testuser',
-      realname:    'Test User',
       description: 'A photographer',
-      location:    'Portland, OR',
-      iconserver:  '1234',
       iconfarm:    5,
+      iconserver:  '1234',
+      id:          '12345678@N00',
       ispro:       1,
+      location:    'Portland, OR',
+      nsid:        '12345678@N00',
       path_alias:  'testuser',
       photosurl:   'https://www.flickr.com/photos/testuser/',
       profileurl:  'https://www.flickr.com/people/testuser/',
-      timezone:    double('timezone', label: 'Pacific Time', offset: '-08:00') # rubocop:disable RSpec/VerifiedDoubles
+      realname:    'Test User',
+      timezone:    double('timezone', label: 'Pacific Time', offset: '-08:00'), # rubocop:disable RSpec/VerifiedDoubles
+      username:    'testuser'
     )
   end
 
@@ -79,19 +85,19 @@ RSpec.describe Flickarr::Profile do
       let(:person_response) do
         double( # rubocop:disable RSpec/VerifiedDoubles
           'person',
-          id:          '12345678@N00',
-          nsid:        '12345678@N00',
-          username:    'testuser',
-          realname:    '',
           description: '',
-          iconserver:  '0',
           iconfarm:    0,
+          iconserver:  '0',
+          id:          '12345678@N00',
           ispro:       0,
           location:    '',
+          nsid:        '12345678@N00',
           path_alias:  nil,
           photosurl:   '',
           profileurl:  '',
-          timezone:    double('timezone', label: '', offset: '') # rubocop:disable RSpec/VerifiedDoubles
+          realname:    '',
+          timezone:    double('timezone', label: '', offset: ''), # rubocop:disable RSpec/VerifiedDoubles
+          username:    'testuser'
         )
       end
 
@@ -111,6 +117,133 @@ RSpec.describe Flickarr::Profile do
       expect(hash[:nsid]).to eq('12345678@N00')
       expect(hash[:realname]).to eq('Test User')
       expect(hash[:username]).to eq('testuser')
+    end
+  end
+
+  describe '#write_json' do
+    let(:archive_path) { Dir.mktmpdir('flickarr-profile-test') }
+    let(:profile_dir) { File.join(archive_path, '_profile') }
+
+    after { FileUtils.rm_rf archive_path }
+
+    it 'writes profile.json to the _profile directory' do
+      profile.write_json(dir: profile_dir)
+
+      expect(File.exist?(File.join(profile_dir, 'profile.json'))).to be true
+    end
+
+    it 'writes valid JSON with profile data' do
+      profile.write_json(dir: profile_dir)
+
+      data = JSON.parse(File.read(File.join(profile_dir, 'profile.json')), symbolize_names: true)
+      expect(data[:username]).to eq('testuser')
+      expect(data[:location]).to eq('Portland, OR')
+    end
+  end
+
+  describe '#write_yaml' do
+    let(:archive_path) { Dir.mktmpdir('flickarr-profile-test') }
+    let(:profile_dir) { File.join(archive_path, '_profile') }
+
+    after { FileUtils.rm_rf archive_path }
+
+    it 'writes profile.yaml to the _profile directory' do
+      profile.write_yaml(dir: profile_dir)
+
+      expect(File.exist?(File.join(profile_dir, 'profile.yaml'))).to be true
+    end
+
+    it 'writes valid YAML with profile data' do
+      profile.write_yaml(dir: profile_dir)
+
+      data = YAML.load_file(File.join(profile_dir, 'profile.yaml'), symbolize_names: true)
+      expect(data[:username]).to eq('testuser')
+      expect(data[:location]).to eq('Portland, OR')
+    end
+  end
+
+  describe '#download_avatar' do
+    let(:archive_path) { Dir.mktmpdir('flickarr-profile-test') }
+    let(:profile_dir) { File.join(archive_path, '_profile') }
+    let(:tempfile) do
+      file = Tempfile.new(['avatar', '.jpg'])
+      file.write('fake image data')
+      file.rewind
+      file
+    end
+
+    after do
+      tempfile.close!
+      FileUtils.rm_rf archive_path
+    end
+
+    it 'downloads the avatar to the _profile directory' do
+      allow(Down).to receive(:download).with(profile.avatar_url).and_return(tempfile)
+
+      profile.download_avatar(archive_path: archive_path)
+
+      avatar_path = File.join(profile_dir, 'avatar.jpg')
+      expect(File.exist?(avatar_path)).to be true
+      expect(File.read(avatar_path)).to eq('fake image data')
+    end
+
+    it 'uses the extension from the avatar URL' do
+      gif_response = double( # rubocop:disable RSpec/VerifiedDoubles
+        'person',
+        description: '',
+        iconfarm:    0,
+        iconserver:  '0',
+        id:          '12345678@N00',
+        ispro:       0,
+        location:    '',
+        nsid:        '12345678@N00',
+        path_alias:  nil,
+        photosurl:   '',
+        profileurl:  '',
+        realname:    '',
+        timezone:    double('timezone', label: '', offset: ''), # rubocop:disable RSpec/VerifiedDoubles
+        username:    'testuser'
+      )
+      gif_profile = described_class.new(gif_response)
+      allow(Down).to receive(:download).with(gif_profile.avatar_url).and_return(tempfile)
+
+      gif_profile.download_avatar(archive_path: archive_path)
+
+      expect(File.exist?(File.join(profile_dir, 'avatar.gif'))).to be true
+    end
+  end
+
+  describe '#write' do
+    let(:archive_path) { Dir.mktmpdir('flickarr-profile-test') }
+    let(:profile_dir) { File.join(archive_path, '_profile') }
+    let(:tempfile) do
+      file = Tempfile.new(['avatar', '.jpg'])
+      file.write('fake image data')
+      file.rewind
+      file
+    end
+
+    before do
+      allow(Down).to receive(:download).and_return(tempfile)
+    end
+
+    after do
+      tempfile.close!
+      FileUtils.rm_rf archive_path
+    end
+
+    it 'creates the _profile directory' do
+      profile.write(archive_path: archive_path)
+
+      expect(Dir.exist?(profile_dir)).to be true
+    end
+
+    it 'writes JSON, YAML, and avatar files' do
+      profile.write(archive_path: archive_path)
+
+      expect(File.exist?(File.join(profile_dir, 'profile.json'))).to be true
+      expect(File.exist?(File.join(profile_dir, 'profile.yaml'))).to be true
+      expect(File.exist?(File.join(profile_dir, 'avatar.jpg'))).to be true
     end
   end
 end

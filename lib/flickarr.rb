@@ -5,7 +5,6 @@ require_relative 'flickarr/auth'
 require_relative 'flickarr/client'
 require_relative 'flickarr/cli'
 require_relative 'flickarr/profile'
-require_relative 'flickarr/profile_writer'
 
 module Flickarr
 end
