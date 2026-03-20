@@ -1,3 +1,4 @@
+require 'down'
 require 'fileutils'
 require 'json'
 require 'yaml'
@@ -31,11 +32,16 @@ module Flickarr
       File.write yaml_path, yaml
     end
 
-    private
-
     def download_avatar
-      # TODO: download avatar using Down gem
+      FileUtils.mkdir_p profile_dir
+      ext       = File.extname profile.avatar_url
+      dest      = File.join profile_dir, "avatar#{ext}"
+      tempfile  = Down.download profile.avatar_url
+
+      FileUtils.mv tempfile.path, dest
     end
+
+    private
 
     def json_path
       File.join profile_dir, 'profile.json'

@@ -1,4 +1,6 @@
+require 'down'
 require 'json'
+require 'tempfile'
 require 'tmpdir'
 require 'yaml'
 
@@ -80,10 +82,55 @@ RSpec.describe Flickarr::ProfileWriter do
     end
   end
 
-  describe '#write' do
-    before do
-      allow(writer).to receive(:download_avatar)
+  describe '#download_avatar' do
+    let(:tempfile) do
+      file = Tempfile.new(['avatar', '.jpg'])
+      file.write('fake image data')
+      file.rewind
+      file
     end
+
+    after { tempfile.close! }
+
+    it 'downloads the avatar to the _profile directory' do
+      allow(Down).to receive(:download).with(profile.avatar_url).and_return(tempfile)
+
+      writer.download_avatar
+
+      avatar_path = File.join(profile_dir, 'avatar.jpg')
+      expect(File.exist?(avatar_path)).to be true
+      expect(File.read(avatar_path)).to eq('fake image data')
+    end
+
+    it 'uses the extension from the avatar URL' do
+      png_profile = instance_double(
+        Flickarr::Profile,
+        avatar_url: 'https://www.flickr.com/images/buddyicon.gif',
+        to_h:       {}
+      )
+      png_writer = described_class.new(archive_path: archive_path, profile: png_profile)
+      allow(Down).to receive(:download).with(png_profile.avatar_url).and_return(tempfile)
+
+      png_writer.download_avatar
+
+      avatar_path = File.join(profile_dir, 'avatar.gif')
+      expect(File.exist?(avatar_path)).to be true
+    end
+  end
+
+  describe '#write' do
+    let(:tempfile) do
+      file = Tempfile.new(['avatar', '.jpg'])
+      file.write('fake image data')
+      file.rewind
+      file
+    end
+
+    before do
+      allow(Down).to receive(:download).and_return(tempfile)
+    end
+
+    after { tempfile.close! }
 
     it 'creates the _profile directory' do
       writer.write
@@ -91,11 +138,12 @@ RSpec.describe Flickarr::ProfileWriter do
       expect(Dir.exist?(profile_dir)).to be true
     end
 
-    it 'writes both JSON and YAML files' do
+    it 'writes JSON, YAML, and avatar files' do
       writer.write
 
       expect(File.exist?(File.join(profile_dir, 'profile.json'))).to be true
       expect(File.exist?(File.join(profile_dir, 'profile.yaml'))).to be true
+      expect(File.exist?(File.join(profile_dir, 'avatar.jpg'))).to be true
     end
   end
 end
