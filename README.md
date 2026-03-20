@@ -10,12 +10,12 @@ Export and archive your Flickr library — photos, videos, metadata, tags, album
     avatar.jpg
     profile.json
     profile.yaml
-  2024/
-    03/
-      15/
-        12345678901_my-cool-photo.jpg
-        12345678901_my-cool-photo.json
-        12345678901_my-cool-photo.yaml
+  2016/
+    11/
+      02/
+        12345678901_cubs-win-photo.jpg
+        12345678901_cubs-win-photo.json
+        12345678901_cubs-win-photo.yaml
   Sets/
     72157718538273371_vacation-photos/
       set.json
@@ -89,7 +89,7 @@ Run `flickarr help` for the full command reference.
 ## Requirements
 
 - Ruby >= 4.0
-- A [Flickr API key](https://www.flickr.com/services/apps/create/)
+- A [Flickr API key](https://flickr.com/services/apps/create)
 
 ## Development
 
