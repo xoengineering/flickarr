@@ -144,11 +144,12 @@ module Flickarr
         Usage: flickarr <command> [options]
 
         Commands:
-          init                Create config directory and stub config file
           auth                Authenticate with Flickr
           config              Show current configuration
           config <key>        Show a single config value
           config:set          Set configuration values (key=value)
+          export:profile      Export Flickr profile to archive
+          init                Create config directory and stub config file
       USAGE
     end
   end
