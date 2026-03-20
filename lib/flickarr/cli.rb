@@ -14,6 +14,8 @@ module Flickarr
       case command
       when 'config'
         run_config
+      when 'config:set'
+        run_config_set
       else
         print_usage
       end
@@ -22,11 +24,10 @@ module Flickarr
     private
 
     def run_config
-      subcommand = @args.shift
+      key = @args.shift
 
-      case subcommand
-      when 'set'
-        run_config_set
+      if key
+        show_config_value(key)
       else
         show_config
       end
@@ -39,28 +40,43 @@ module Flickarr
       end
 
       config = Config.load(@config_path)
-      config.to_h.each do |key, value|
-        puts "#{key}: #{value || '(not set)'}"
-      end
+      print_config(config)
     end
 
-    def run_config_set
-      key = @args.shift
-      value = @args.shift
-
-      unless key && value
-        puts 'Usage: flickarr config set <key> <value>'
-        return
-      end
-
-      unless VALID_CONFIG_KEYS.include?(key.to_sym)
-        puts "Unknown config key: #{key}"
+    def show_config_value key
+      unless File.exist?(@config_path)
+        puts "No config file found at #{@config_path}"
         return
       end
 
       config = Config.load(@config_path)
-      config.public_send(:"#{key}=", value)
+      puts config.to_h[key.to_sym]
+    end
+
+    def run_config_set
+      if @args.empty?
+        puts 'Usage: flickarr config:set <key>=<value> [<key>=<value> ...]'
+        return
+      end
+
+      pairs = @args.map { |pair| pair.split('=', 2) }
+      invalid_key = pairs.map(&:first).find { |key| !VALID_CONFIG_KEYS.include?(key.to_sym) }
+
+      if invalid_key
+        puts "Unknown config key: #{invalid_key}"
+        return
+      end
+
+      config = Config.load(@config_path)
+      pairs.each { |key, value| config.public_send(:"#{key}=", value) }
       config.save(@config_path)
+      print_config(config)
+    end
+
+    def print_config config
+      config.to_h.each do |key, value|
+        puts "#{key}: #{value || '(not set)'}"
+      end
     end
 
     def print_usage
@@ -68,8 +84,9 @@ module Flickarr
         Usage: flickarr <command> [options]
 
         Commands:
-          config          Show current configuration
-          config set      Set a configuration value
+          config              Show current configuration
+          config <key>        Show a single config value
+          config:set          Set configuration values (key=value)
       USAGE
     end
   end

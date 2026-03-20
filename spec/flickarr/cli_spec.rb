@@ -13,8 +13,8 @@ RSpec.describe Flickarr::CLI do
     end
   end
 
-  describe 'config command' do
-    it 'displays current config values' do
+  describe 'config' do
+    it 'displays all config values' do
       dir = File.join(Dir.tmpdir, "flickarr-cli-test-#{Process.pid}")
       path = File.join(dir, 'config.yml')
       FileUtils.mkdir_p(dir)
@@ -28,18 +28,33 @@ RSpec.describe Flickarr::CLI do
       FileUtils.rm_rf(dir)
     end
 
+    it 'displays a single config value by key' do
+      dir = File.join(Dir.tmpdir, "flickarr-cli-test-#{Process.pid}")
+      path = File.join(dir, 'config.yml')
+      FileUtils.mkdir_p(dir)
+      config = Flickarr::Config.new
+      config.api_key = 'my-key'
+      config.shared_secret = 'my-secret'
+      config.save(path)
+
+      cli = described_class.new(%w[config api_key], config_path: path)
+      expect { cli.run }.to output("my-key\n").to_stdout
+    ensure
+      FileUtils.rm_rf(dir)
+    end
+
     it 'reports when no config file exists' do
       cli = described_class.new(['config'], config_path: '/tmp/nonexistent-flickarr.yml')
       expect { cli.run }.to output(/No config file found/).to_stdout
     end
   end
 
-  describe 'config set command' do
-    it 'sets a config value and saves to file' do
+  describe 'config:set' do
+    it 'sets a single value with key=value syntax' do
       dir = File.join(Dir.tmpdir, "flickarr-cli-test-#{Process.pid}")
       path = File.join(dir, 'config.yml')
 
-      cli = described_class.new(%w[config set api_key new-key], config_path: path)
+      cli = described_class.new(['config:set', 'api_key=new-key'], config_path: path)
       cli.run
 
       config = Flickarr::Config.load(path)
@@ -48,7 +63,21 @@ RSpec.describe Flickarr::CLI do
       FileUtils.rm_rf(dir)
     end
 
-    it 'updates an existing config file without clobbering other values' do
+    it 'sets multiple values at once' do
+      dir = File.join(Dir.tmpdir, "flickarr-cli-test-#{Process.pid}")
+      path = File.join(dir, 'config.yml')
+
+      cli = described_class.new(['config:set', 'api_key=my-key', 'shared_secret=my-secret'], config_path: path)
+      cli.run
+
+      config = Flickarr::Config.load(path)
+      expect(config.api_key).to eq('my-key')
+      expect(config.shared_secret).to eq('my-secret')
+    ensure
+      FileUtils.rm_rf(dir)
+    end
+
+    it 'preserves existing values when setting new ones' do
       dir = File.join(Dir.tmpdir, "flickarr-cli-test-#{Process.pid}")
       path = File.join(dir, 'config.yml')
       FileUtils.mkdir_p(dir)
@@ -56,7 +85,7 @@ RSpec.describe Flickarr::CLI do
       config.api_key = 'existing-key'
       config.save(path)
 
-      cli = described_class.new(%w[config set shared_secret my-secret], config_path: path)
+      cli = described_class.new(['config:set', 'shared_secret=my-secret'], config_path: path)
       cli.run
 
       config = Flickarr::Config.load(path)
@@ -66,19 +95,29 @@ RSpec.describe Flickarr::CLI do
       FileUtils.rm_rf(dir)
     end
 
-    it 'rejects unknown config keys' do
+    it 'prints the full config after setting' do
       dir = File.join(Dir.tmpdir, "flickarr-cli-test-#{Process.pid}")
       path = File.join(dir, 'config.yml')
 
-      cli = described_class.new(%w[config set bogus_key value], config_path: path)
-      expect { cli.run }.to output(/Unknown config key/).to_stdout
+      cli = described_class.new(['config:set', 'api_key=my-key'], config_path: path)
+      expect { cli.run }.to output(/api_key: my-key/).to_stdout
     ensure
       FileUtils.rm_rf(dir)
     end
 
-    it 'prints usage when key or value is missing' do
-      cli = described_class.new(%w[config set], config_path: '/tmp/whatever.yml')
-      expect { cli.run }.to output(/Usage:.*config set/).to_stdout
+    it 'rejects unknown config keys' do
+      dir = File.join(Dir.tmpdir, "flickarr-cli-test-#{Process.pid}")
+      path = File.join(dir, 'config.yml')
+
+      cli = described_class.new(['config:set', 'bogus_key=value'], config_path: path)
+      expect { cli.run }.to output(/Unknown config key: bogus_key/).to_stdout
+    ensure
+      FileUtils.rm_rf(dir)
+    end
+
+    it 'prints usage when no key=value pairs given' do
+      cli = described_class.new(['config:set'], config_path: '/tmp/whatever.yml')
+      expect { cli.run }.to output(/Usage:.*config:set/).to_stdout
     end
   end
 end
