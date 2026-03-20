@@ -114,7 +114,7 @@ flickarr export:videos
 Export a single post by its Flickr URL:
 
 ```sh
-flickarr export https://www.flickr.com/photos/username/12345678901
+flickarr export https://flickr.com/veganstraightedge/3513998015
 ```
 
 ## 9. Export your albums and collections
@@ -130,13 +130,19 @@ flickarr export:albums
 Export a single album by URL:
 
 ```sh
-flickarr export:sets https://www.flickr.com/photos/username/sets/72157718538273371/
+flickarr export:sets https://www.flickr.com/photos/USERNAME/sets/72157718538273371/
 ```
 
 Collections (groups of albums) work the same way:
 
 ```sh
 flickarr export:collections
+```
+
+Export a single collection by URL:
+
+```sh
+flickarr export:collections https://www.flickr.com/photos/USERNAME/collections/72157666222057746/
 ```
 
 ## 10. Check your progress
@@ -176,67 +182,68 @@ cat $(flickarr errors)
 
 ## Re-downloading
 
-By default, Flickarr skips files that already exist. To force a re-download (e.g. after we added richer metadata):
+By default, Flickarr skips files that already exist. To force a re-download:
 
 ```sh
-flickarr export --overwrite
+flickarr export         --overwrite
+flickarr export URL     --overwrite
 flickarr export:profile --overwrite
-flickarr export:sets --overwrite
+flickarr export:sets    --overwrite
 ```
 
 ## Archive structure
 
 ```
 ~/Pictures/Flickarr/username/
+  _errors.log                           # log of any failed downloads
+
   Profile/
     avatar.jpg
     profile.json
     profile.yaml
 
-  2024/
-    03/
-      15/
-        12345678901_my-cool-photo.jpg       # original size photo
-        12345678901_my-cool-photo.json      # full metadata (EXIF, geo, tags, license, etc.)
-        12345678901_my-cool-photo.yaml      # same metadata in YAML
-      16/
-        98765432101_sunset-video.mp4        # original video (or best available)
-        98765432101_sunset-video.jpg        # poster frame
-        98765432101_sunset-video.json
-        98765432101_sunset-video.yaml
+  2016/
+    11/
+      12/
+        12345678901_oh-no-photo.jpg     # original size photo
+        12345678901_oh-no-photo.json    # full metadata (EXIF, geo, tags, license, etc.)
+        12345678901_oh-no-photo.yaml    # same metadata in YAML
+      13/
+        98765432101_cubs-win-video.mp4  # original video (or best available)
+        98765432101_cubs-win-video.jpg  # poster frame
+        98765432101_cubs-win-video.json
+        98765432101_cubs-win-video.yaml
 
   Sets/
     72157718538273371_vacation-photos/
-      set.json                              # set metadata (title, description, dates)
+      set.json                          # set metadata (title, description, dates)
       set.yaml
-      photos.json                           # ordered list of photo references with file paths
+      photos.json                       # ordered list of photo references with file paths
       photos.yaml
 
   Collections/
     375727-72157666222057746_travel/
-      collection.json                       # collection metadata
+      collection.json                   # collection metadata
       collection.yaml
-      sets.json                             # references to sets in this collection
+      sets.json                         # references to sets in this collection
       sets.yaml
-
-  _errors.log                               # log of any failed downloads
 ```
 
 ## Metadata sidecar contents
 
 Each photo/video sidecar includes:
 
-- **Camera**: make, model, and full EXIF data
-- **Dates**: taken, uploaded, last updated
-- **Description**: post description/caption
+- **Camera**:       make, model, and full EXIF data
+- **Dates**:        taken, uploaded, last updated
+- **Description**:  post description/caption
 - **Geo/Location**: latitude, longitude, locality, region, country
-- **License**: ID, human-readable name, and Creative Commons URL
-- **Owner**: username, real name, NSID
-- **Sizes**: all available sizes with dimensions and URLs
-- **Tags**: full tag list
-- **URLs**: Flickr page URL
-- **Views**: view count
-- **Visibility**: public, friends, family
+- **License**:      ID, human-readable name, and Creative Commons URL
+- **Owner**:        username, real name, NSID
+- **Sizes**:        all available sizes with dimensions and URLs
+- **Tags**:         full tag list
+- **URLs**:         Flickr page URL
+- **Views**:        view count
+- **Visibility**:   public, friends, family
 
 ## Troubleshooting
 
