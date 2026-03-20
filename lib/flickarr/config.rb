@@ -3,12 +3,15 @@ require 'yaml'
 
 module Flickarr
   class Config
-    attr_accessor :access_secret, :access_token, :api_key, :shared_secret, :user_nsid, :username
+    DEFAULT_LIBRARY_PATH = File.join(Dir.home, 'Pictures', 'Flickarr').freeze
+
+    attr_accessor :access_secret, :access_token, :api_key, :library_path, :shared_secret, :user_nsid, :username
 
     def initialize
       @access_secret = nil
       @access_token = nil
       @api_key = ENV.fetch('FLICKARR_API_KEY', nil)
+      @library_path = DEFAULT_LIBRARY_PATH
       @shared_secret = ENV.fetch('FLICKARR_SHARED_SECRET', nil)
       @user_nsid = nil
       @username = nil
@@ -23,11 +26,18 @@ module Flickarr
       File.write path, yaml
     end
 
+    def archive_path
+      return nil unless username
+
+      File.join library_path, username
+    end
+
     def to_h
       {
         access_secret: access_secret,
         access_token:  access_token,
         api_key:       api_key,
+        library_path:  library_path,
         shared_secret: shared_secret,
         user_nsid:     user_nsid,
         username:      username
@@ -44,6 +54,7 @@ module Flickarr
       config.access_secret = yaml[:access_secret] if yaml[:access_secret]
       config.access_token  = yaml[:access_token]  if yaml[:access_token]
       config.api_key       = yaml[:api_key]       if yaml[:api_key]
+      config.library_path  = yaml[:library_path]  if yaml[:library_path]
       config.shared_secret = yaml[:shared_secret] if yaml[:shared_secret]
       config.user_nsid     = yaml[:user_nsid]     if yaml[:user_nsid]
       config.username      = yaml[:username]      if yaml[:username]

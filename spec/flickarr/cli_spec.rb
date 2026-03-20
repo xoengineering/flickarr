@@ -197,6 +197,32 @@ RSpec.describe Flickarr::CLI do
     ensure
       FileUtils.rm_rf(dir)
     end
+
+    it 'sets a custom library_path when provided' do
+      dir = File.join(Dir.tmpdir, "flickarr-init-test-#{Process.pid}")
+      path = File.join(dir, 'config.yml')
+
+      cli = described_class.new(['init', '/custom/photos'], config_path: path)
+      cli.run
+
+      config = Flickarr::Config.load(path)
+      expect(config.library_path).to eq('/custom/photos')
+    ensure
+      FileUtils.rm_rf(dir)
+    end
+
+    it 'uses default library_path when none provided' do
+      dir = File.join(Dir.tmpdir, "flickarr-init-test-#{Process.pid}")
+      path = File.join(dir, 'config.yml')
+
+      cli = described_class.new(['init'], config_path: path)
+      cli.run
+
+      config = Flickarr::Config.load(path)
+      expect(config.library_path).to eq(File.join(Dir.home, 'Pictures', 'Flickarr'))
+    ensure
+      FileUtils.rm_rf(dir)
+    end
   end
 end
 # rubocop:enable RSpec/VerifiedDoubles

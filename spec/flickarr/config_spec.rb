@@ -2,13 +2,14 @@ require 'tmpdir'
 
 RSpec.describe Flickarr::Config do
   describe '#initialize' do
-    it 'has nil attributes by default' do
+    it 'has nil attributes by default except library_path' do
       config = described_class.new
 
-      expect(config.api_key).to be_nil
-      expect(config.shared_secret).to be_nil
-      expect(config.access_token).to be_nil
       expect(config.access_secret).to be_nil
+      expect(config.access_token).to be_nil
+      expect(config.api_key).to be_nil
+      expect(config.library_path).to eq(File.join(Dir.home, 'Pictures', 'Flickarr'))
+      expect(config.shared_secret).to be_nil
       expect(config.user_nsid).to be_nil
       expect(config.username).to be_nil
     end
@@ -96,11 +97,39 @@ RSpec.describe Flickarr::Config do
       FileUtils.rm_rf(dir)
     end
 
+    it 'loads library_path from file' do
+      dir = File.join(Dir.tmpdir, "flickarr-test-#{Process.pid}")
+      path = File.join(dir, 'config.yml')
+      FileUtils.mkdir_p(dir)
+      File.write(path, YAML.dump('library_path' => '/custom/path'))
+
+      config = described_class.load(path)
+
+      expect(config.library_path).to eq('/custom/path')
+    ensure
+      FileUtils.rm_rf(dir)
+    end
+
     it 'returns a default config when file does not exist' do
       config = described_class.load('/tmp/nonexistent-flickarr-config.yml')
 
       expect(config.api_key).to be_nil
       expect(config.username).to be_nil
+    end
+  end
+
+  describe '#archive_path' do
+    it 'combines library_path and username' do
+      config = described_class.new
+      config.username = 'testuser'
+
+      expect(config.archive_path).to eq(File.join(Dir.home, 'Pictures', 'Flickarr', 'testuser'))
+    end
+
+    it 'returns nil when username is not set' do
+      config = described_class.new
+
+      expect(config.archive_path).to be_nil
     end
   end
 end
