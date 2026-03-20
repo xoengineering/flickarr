@@ -41,7 +41,9 @@ This creates a config file at `~/.flickarr/config.yml`.
 flickarr init
 ```
 
-By default, your archive will be saved to `~/Pictures/Flickarr/`. To use a different location:
+By default, your archive will be saved to `~/Pictures/Flickarr/`. After you authenticate, a subfolder with your Flickr username is created automatically (e.g. `~/Pictures/Flickarr/veganstraightedge/`).
+
+To use a different base location:
 
 ```sh
 flickarr init /path/to/your/archive
@@ -70,7 +72,8 @@ This starts the OAuth flow:
 1. Flickarr prints a URL — open it in your browser
 2. Flickr asks you to authorize the app — click "OK, I'll Authorize It"
 3. Flickr shows you a verification code (9 digits, like `888-675-309`)
-4. Paste the code back into your terminal
+4. Copy that code
+5. Paste the code back into your terminal
 
 <!-- TODO: screenshot of Flickr OAuth authorization page -->
 <!-- TODO: screenshot of Flickr verification code page -->
