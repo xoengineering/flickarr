@@ -94,8 +94,12 @@ module Flickarr
 
       total          = tree.respond_to?(:count) ? tree.count : 0
       download_count = 0
+      interrupted    = false
+      trap('INT') { interrupted = true }
 
       tree.each do |collection_data|
+        break if interrupted
+
         count      += 1
         collection  = Collection.new(collection_data)
         status      = collection.write(archive_path: archive, overwrite: @overwrite)
@@ -116,6 +120,7 @@ module Flickarr
         break if @limit && download_count >= @limit
       end
 
+      puts "\nInterrupted." if interrupted
       puts "Done. #{count} collections processed."
     end
 
@@ -174,8 +179,12 @@ module Flickarr
       total   = sets.respond_to?(:total) ? sets.total.to_i : 0
 
       download_count = 0
+      interrupted    = false
+      trap('INT') { interrupted = true }
 
       sets.each do |set_data|
+        break if interrupted
+
         count += 1
 
         photos_response = client.set_photos(photoset_id: set_data.id, user_id: config.user_nsid)
@@ -200,6 +209,7 @@ module Flickarr
         break if @limit && download_count >= @limit
       end
 
+      puts "\nInterrupted." if interrupted
       puts "Done. #{count} sets processed."
     end
 
