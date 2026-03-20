@@ -95,6 +95,55 @@ tagspace: 'ExifIFD')
     end
   end
 
+  describe '#location' do
+    it 'returns nil when photo has no location' do
+      expect(photo.location).to be_nil
+    end
+
+    context 'when photo is geotagged' do
+      let(:geo_location) do
+        double(
+          'location',
+          accuracy:  '16',
+          context:   '0',
+          country:   'United States',
+          county:    'Multnomah',
+          latitude:  '45.523064',
+          locality:  'Portland',
+          longitude: '-122.676483',
+          region:    'Oregon'
+        )
+      end
+
+      let(:info_response) do
+        double(
+          'info',
+          dates:          dates,
+          description:    'This is my cat',
+          id:             '3839885270',
+          license:        '4',
+          location:       geo_location,
+          media:          'photo',
+          originalformat: 'jpg',
+          owner:          owner,
+          tags:           tags,
+          title:          'My Cool Cat!',
+          urls:           urls,
+          views:          '2781',
+          visibility:     visibility
+        )
+      end
+
+      it 'extracts location data' do
+        expect(photo.location[:latitude]).to eq('45.523064')
+        expect(photo.location[:longitude]).to eq('-122.676483')
+        expect(photo.location[:locality]).to eq('Portland')
+        expect(photo.location[:region]).to eq('Oregon')
+        expect(photo.location[:country]).to eq('United States')
+      end
+    end
+  end
+
   describe '#camera' do
     it 'returns the camera name from EXIF' do
       expect(photo.camera).to eq('Canon Digital IXUS 55')

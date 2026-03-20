@@ -20,6 +20,7 @@ module Flickarr
                 :extension,
                 :id,
                 :license,
+                :location,
                 :media,
                 :owner,
                 :tags,
@@ -39,11 +40,12 @@ module Flickarr
       @visibility  = extract_visibility info
       @owner       = extract_owner info
 
-      @dates   = info.dates
-      @sizes   = sizes
-      @urls    = extract_urls info
-      @camera  = exif_camera exif
-      @exif    = extract_exif exif
+      @dates    = info.dates
+      @location = extract_location info
+      @sizes    = sizes
+      @urls     = extract_urls info
+      @camera   = exif_camera exif
+      @exif     = extract_exif exif
     end
 
     def basename
@@ -97,6 +99,7 @@ module Flickarr
         extension:    extension,
         id:           id,
         license:      license,
+        location:     location,
         media:        media,
         original_url: original_url,
         owner:        owner,
@@ -179,6 +182,22 @@ module Flickarr
         nsid:     safe_call(o, :nsid).to_s,
         realname: safe_call(o, :realname).to_s,
         username: safe_call(o, :username).to_s
+      }
+    end
+
+    def extract_location info
+      loc = safe_call(info, :location)
+      return nil unless loc
+
+      {
+        accuracy:  safe_call(loc, :accuracy).to_s,
+        context:   safe_call(loc, :context).to_s,
+        country:   safe_call(loc, :country).to_s,
+        county:    safe_call(loc, :county).to_s,
+        latitude:  safe_call(loc, :latitude).to_s,
+        locality:  safe_call(loc, :locality).to_s,
+        longitude: safe_call(loc, :longitude).to_s,
+        region:    safe_call(loc, :region).to_s
       }
     end
 
