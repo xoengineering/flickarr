@@ -2,6 +2,7 @@ require 'date'
 require 'down'
 require 'fileutils'
 require 'json'
+require 'net/http'
 require 'slugify'
 require 'yaml'
 
@@ -63,9 +64,10 @@ module Flickarr
     def download archive_path:
       dir  = photo_dir archive_path
       dest = File.join dir, "#{basename}.#{extension}"
+      url  = resolve_download_url
 
       FileUtils.mkdir_p dir
-      Down.download original_url, destination: dest
+      Down.download url, destination: dest
     end
 
     def folder_path
@@ -152,6 +154,16 @@ module Flickarr
       when Array then obj.map { deep_stringify_keys it }
       else obj
       end
+    end
+
+    def resolve_download_url
+      url = original_url
+      return url unless media == 'video'
+
+      uri      = URI(url)
+      response = Net::HTTP.get_response(uri)
+
+      response.is_a?(Net::HTTPRedirection) ? response['location'] : url
     end
 
     def extract_exif exif_response
