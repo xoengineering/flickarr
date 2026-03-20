@@ -20,6 +20,10 @@ module Flickarr
       flickr.people.getInfo(user_id: user_id)
     end
 
+    def photo_exif photo_id:
+      flickr.photos.getExif(photo_id: photo_id)
+    end
+
     def photo_info photo_id:
       flickr.photos.getInfo(photo_id: photo_id)
     end

@@ -102,6 +102,31 @@ RSpec.describe Flickarr::Client do
     end
   end
 
+  describe '#photo_exif' do
+    # Flickr gem uses dynamic method dispatch, so verified doubles won't work
+    let(:flickr_instance) { double('Flickr') } # rubocop:disable RSpec/VerifiedDoubles
+    let(:photos_api) { double('photos') } # rubocop:disable RSpec/VerifiedDoubles
+    let(:client) do
+      allow(Flickr).to receive(:new).and_return(flickr_instance)
+      described_class.new(config)
+    end
+
+    before do
+      allow(flickr_instance).to receive(:photos).and_return(photos_api)
+    end
+
+    it 'calls flickr.photos.getExif with photo_id' do
+      exif_response = double('exif') # rubocop:disable RSpec/VerifiedDoubles
+      allow(photos_api).to receive(:getExif)
+        .with(photo_id: '3839885270')
+        .and_return(exif_response)
+
+      result = client.photo_exif(photo_id: '3839885270')
+
+      expect(result).to eq(exif_response)
+    end
+  end
+
   describe '#photo_info' do
     # Flickr gem uses dynamic method dispatch, so verified doubles won't work
     let(:flickr_instance) { double('Flickr') } # rubocop:disable RSpec/VerifiedDoubles
