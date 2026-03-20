@@ -179,6 +179,9 @@ module Flickarr
           export:photo <url>  Export a single photo by Flickr URL
           export:profile      Export Flickr profile to archive
           init                Create config directory and stub config file
+
+        Options:
+          --overwrite         Re-download and overwrite existing files
       USAGE
     end
   end
