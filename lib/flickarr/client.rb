@@ -10,7 +10,8 @@ module Flickarr
       raise ConfigError, 'api_key is required' if config.api_key.nil? || config.api_key.empty?
       raise ConfigError, 'shared_secret is required' if config.shared_secret.nil? || config.shared_secret.empty?
 
-      @flickr = Flickr.new config.api_key, config.shared_secret
+      @flickr       = Flickr.new config.api_key, config.shared_secret
+      @rate_limiter = RateLimiter.new
 
       return unless config.access_token && config.access_secret
 
@@ -19,7 +20,7 @@ module Flickarr
     end
 
     def photo id:
-      PhotoQuery.new(flickr: flickr, id: id)
+      PhotoQuery.new(flickr: flickr, id: id, rate_limiter: @rate_limiter)
     end
 
     PHOTO_EXTRAS = %w[
@@ -51,11 +52,13 @@ module Flickarr
     ].join(',').freeze
 
     def photos user_id:, page: 1, per_page: 100
-      flickr.people.getPhotos(user_id: user_id, page: page, per_page: per_page, extras: PHOTO_EXTRAS)
+      @rate_limiter.track do
+        flickr.people.getPhotos(user_id: user_id, page: page, per_page: per_page, extras: PHOTO_EXTRAS)
+      end
     end
 
     def profile user_id:
-      ProfileQuery.new(flickr: flickr, user_id: user_id)
+      ProfileQuery.new(flickr: flickr, user_id: user_id, rate_limiter: @rate_limiter)
     end
   end
 end

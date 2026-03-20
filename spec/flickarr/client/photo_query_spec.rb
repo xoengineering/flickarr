@@ -2,7 +2,8 @@
 RSpec.describe Flickarr::Client::PhotoQuery do
   let(:flickr_instance) { double('Flickr') }
   let(:photos_api) { double('photos') }
-  let(:query) { described_class.new(flickr: flickr_instance, id: '3839885270') }
+  let(:rate_limiter) { Flickarr::RateLimiter.new(interval: 0) }
+  let(:query) { described_class.new(flickr: flickr_instance, id: '3839885270', rate_limiter: rate_limiter) }
 
   before do
     allow(flickr_instance).to receive(:photos).and_return(photos_api)
