@@ -61,10 +61,8 @@ module Flickarr
       end
 
       client  = Client.new(config)
-      info    = client.photo_info(photo_id: photo_id)
-      sizes   = client.photo_sizes(photo_id: photo_id)
-      exif    = client.photo_exif(photo_id: photo_id)
-      photo   = Photo.new(info: info, sizes: sizes.size, exif: exif)
+      query   = client.photo(id: photo_id)
+      photo   = Photo.new(info: query.info, sizes: query.sizes.size, exif: query.exif)
       archive = config.archive_path
 
       photo.write(archive_path: archive)
@@ -80,7 +78,7 @@ module Flickarr
       end
 
       client   = Client.new(config)
-      person   = client.person_info(user_id: config.user_nsid)
+      person   = client.profile(user_id: config.user_nsid).info
       profile  = Profile.new(person)
       archive  = config.archive_path
 

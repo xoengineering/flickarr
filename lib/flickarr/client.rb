@@ -16,24 +16,46 @@ module Flickarr
       @flickr.access_secret = config.access_secret
     end
 
-    def person_info user_id:
-      flickr.people.getInfo(user_id: user_id)
-    end
-
-    def photo_exif photo_id:
-      flickr.photos.getExif(photo_id: photo_id)
-    end
-
-    def photo_info photo_id:
-      flickr.photos.getInfo(photo_id: photo_id)
-    end
-
-    def photo_sizes photo_id:
-      flickr.photos.getSizes(photo_id: photo_id)
+    def photo id:
+      PhotoQuery.new(flickr: flickr, id: id)
     end
 
     def photos user_id:, page: 1, per_page: 100
       flickr.people.getPhotos(user_id: user_id, page: page, per_page: per_page)
+    end
+
+    def profile user_id:
+      ProfileQuery.new(flickr: flickr, user_id: user_id)
+    end
+
+    class PhotoQuery
+      def initialize flickr:, id:
+        @flickr = flickr
+        @id     = id
+      end
+
+      def exif
+        @flickr.photos.getExif(photo_id: @id)
+      end
+
+      def info
+        @flickr.photos.getInfo(photo_id: @id)
+      end
+
+      def sizes
+        @flickr.photos.getSizes(photo_id: @id)
+      end
+    end
+
+    class ProfileQuery
+      def initialize flickr:, user_id:
+        @flickr  = flickr
+        @user_id = user_id
+      end
+
+      def info
+        @flickr.people.getInfo(user_id: @user_id)
+      end
     end
   end
 end
