@@ -380,6 +380,48 @@ width: 1024)
 
       expect(Down).to have_received(:download).with(photo.original_url, destination: dest)
     end
+
+    context 'when media is video' do
+      let(:info_response) do
+        double(
+          'info',
+          dates:          dates,
+          description:    'A video',
+          id:             '3839885270',
+          license:        '0',
+          media:          'video',
+          originalformat: 'jpg',
+          owner:          owner,
+          tags:           tags,
+          title:          'My Cool Cat!',
+          urls:           urls,
+          views:          '0',
+          visibility:     visibility
+        )
+      end
+
+      let(:sizes_response) do
+        [
+          double('size', height: 1200, label: 'Original',
+                         source: 'https://live.staticflickr.com/o.jpg', media: 'photo', width: 1600),
+          double('size', height: 0, label: 'Video Original',
+                         source: 'https://www.flickr.com/photos/user/123/play/orig/abc/', media: 'video', width: 0)
+        ]
+      end
+
+      it 'downloads both the video and poster frame' do
+        redirect_url = 'https://live.staticflickr.com/video/123/abc/orig.mp4?s=token'
+        redirect_response = Net::HTTPFound.new('1.1', '302', 'Found')
+        redirect_response['location'] = redirect_url
+        allow(Net::HTTP).to receive(:get_response).and_return(redirect_response)
+        allow(Down).to receive(:download)
+
+        photo.download(archive_path: archive_path)
+
+        expect(Down).to have_received(:download).with(redirect_url, destination: anything).once
+        expect(Down).to have_received(:download).with('https://live.staticflickr.com/o.jpg', destination: anything).once
+      end
+    end
   end
 
   describe '#write_json' do

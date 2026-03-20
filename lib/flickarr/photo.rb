@@ -68,6 +68,17 @@ module Flickarr
 
       FileUtils.mkdir_p dir
       Down.download url, destination: dest
+      download_poster_frame dir: dir if media == 'video'
+    end
+
+    def download_poster_frame dir:
+      poster = @sizes.find { it.label == 'Original' && it.media == 'photo' }
+      return unless poster
+
+      ext  = File.extname(poster.source)
+      dest = File.join dir, "#{basename}#{ext}"
+
+      Down.download poster.source, destination: dest
     end
 
     def folder_path
