@@ -88,23 +88,30 @@ module Flickarr
       tree    = client.collections(user_id: config.user_nsid)
       count   = 0
 
+      total          = tree.respond_to?(:count) ? tree.count : 0
+      download_count = 0
+
       tree.each do |collection_data|
         count      += 1
         collection  = Collection.new(collection_data)
         status      = collection.write(archive_path: archive, overwrite: @overwrite)
         path        = File.join archive, 'Collections', collection.dirname
 
-        puts "#{collection.title} (#{count})"
+        puts "#{collection.title} (#{count}/#{total})"
         case status
-        when :created     then puts "  Downloaded to #{path}"
-        when :overwritten then puts "  Re-downloaded to #{path}"
-        when :skipped     then puts "  Skipped at #{path}"
+        when :created
+          puts "  Downloaded to #{path}"
+          download_count += 1
+        when :overwritten
+          puts "  Re-downloaded to #{path}"
+          download_count += 1
+        when :skipped
+          puts "  Skipped at #{path}"
         end
 
-        break if @limit && count >= @limit
+        break if @limit && download_count >= @limit
       end
 
-      puts "Reached limit of #{@limit} collections." if @limit && count >= @limit
       puts "Done. #{count} collections processed."
     end
 
@@ -162,6 +169,8 @@ module Flickarr
       count   = 0
       total   = sets.respond_to?(:total) ? sets.total.to_i : 0
 
+      download_count = 0
+
       sets.each do |set_data|
         count += 1
 
@@ -174,12 +183,17 @@ module Flickarr
 
         puts "#{photo_set.title} (#{count}/#{total})"
         case status
-        when :created     then puts "  Downloaded to #{path}"
-        when :overwritten then puts "  Re-downloaded to #{path}"
-        when :skipped     then puts "  Skipped at #{path}"
+        when :created
+          puts "  Downloaded to #{path}"
+          download_count += 1
+        when :overwritten
+          puts "  Re-downloaded to #{path}"
+          download_count += 1
+        when :skipped
+          puts "  Skipped at #{path}"
         end
 
-        break if @limit && count >= @limit
+        break if @limit && download_count >= @limit
       end
 
       puts "Done. #{count} sets processed."
