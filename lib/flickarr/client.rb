@@ -1,4 +1,6 @@
 require 'flickr'
+require_relative 'client/photo_query'
+require_relative 'client/profile_query'
 
 module Flickarr
   class Client
@@ -26,36 +28,6 @@ module Flickarr
 
     def profile user_id:
       ProfileQuery.new(flickr: flickr, user_id: user_id)
-    end
-
-    class PhotoQuery
-      def initialize flickr:, id:
-        @flickr = flickr
-        @id     = id
-      end
-
-      def exif
-        @flickr.photos.getExif(photo_id: @id)
-      end
-
-      def info
-        @flickr.photos.getInfo(photo_id: @id)
-      end
-
-      def sizes
-        @flickr.photos.getSizes(photo_id: @id)
-      end
-    end
-
-    class ProfileQuery
-      def initialize flickr:, user_id:
-        @flickr  = flickr
-        @user_id = user_id
-      end
-
-      def info
-        @flickr.people.getInfo(user_id: @user_id)
-      end
     end
   end
 end
