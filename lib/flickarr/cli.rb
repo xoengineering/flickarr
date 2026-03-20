@@ -367,7 +367,16 @@ module Flickarr
     end
 
     def run_export_or_post
-      if @args.first && Post.id_from_url(@args.first)
+      url = @args.first
+
+      if Collection.id_from_url(url.to_s)
+        run_export_single_collection
+      elsif PhotoSet.id_from_url(url.to_s)
+        run_export_single_set
+      elsif Profile.matches_url?(url.to_s)
+        @args.shift
+        run_export_profile
+      elsif Post.id_from_url(url.to_s)
         run_export_post
       else
         run_export_posts

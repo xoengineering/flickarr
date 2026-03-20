@@ -6,6 +6,11 @@ require 'yaml'
 module Flickarr
   class Profile
     DEFAULT_AVATAR_URL = 'https://www.flickr.com/images/buddyicon.gif'.freeze
+    PROFILE_URL_PATTERN = %r{\Ahttps?://(?:www\.)?flickr\.com/(?:photos|people)/([^/]+)/?\z}
+
+    def self.matches_url? url
+      PROFILE_URL_PATTERN.match?(url.to_s)
+    end
 
     attr_reader :city,
                 :country,
