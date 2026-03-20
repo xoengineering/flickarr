@@ -71,15 +71,18 @@ module Flickarr
     end
 
     def write archive_path:, overwrite: false
-      dir        = profile_dir archive_path
-      json_path  = File.join dir, 'profile.json'
+      dir       = profile_dir archive_path
+      json_path = File.join dir, 'profile.json'
+      existed   = File.exist? json_path
 
-      return if File.exist?(json_path) && !overwrite
+      return :skipped if existed && !overwrite
 
       FileUtils.mkdir_p dir
       write_json dir: dir
       write_yaml dir: dir
       download_avatar archive_path: archive_path
+
+      existed ? :overwritten : :created
     end
 
     def write_json dir:

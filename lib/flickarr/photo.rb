@@ -115,13 +115,16 @@ module Flickarr
     def write archive_path:, overwrite: false
       dir        = photo_dir archive_path
       image_path = File.join dir, "#{basename}.#{extension}"
+      existed    = File.exist? image_path
 
-      return if File.exist?(image_path) && !overwrite
+      return :skipped if existed && !overwrite
 
       FileUtils.mkdir_p dir
       download archive_path: archive_path
       write_json archive_path: archive_path
       write_yaml archive_path: archive_path
+
+      existed ? :overwritten : :created
     end
 
     def write_json archive_path:

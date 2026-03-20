@@ -224,8 +224,9 @@ RSpec.describe Flickarr::Profile do
     end
 
     it 'writes JSON, YAML, and downloads avatar' do
-      profile.write(archive_path: archive_path)
+      result = profile.write(archive_path: archive_path)
 
+      expect(result).to eq(:created)
       expect(File.exist?(File.join(profile_dir, 'profile.json'))).to be true
       expect(File.exist?(File.join(profile_dir, 'profile.yaml'))).to be true
       expect(Down).to have_received(:download)
@@ -235,8 +236,9 @@ RSpec.describe Flickarr::Profile do
       FileUtils.mkdir_p profile_dir
       File.write File.join(profile_dir, 'profile.json'), 'existing'
 
-      profile.write(archive_path: archive_path)
+      result = profile.write(archive_path: archive_path)
 
+      expect(result).to eq(:skipped)
       expect(Down).not_to have_received(:download)
     end
 
@@ -244,8 +246,9 @@ RSpec.describe Flickarr::Profile do
       FileUtils.mkdir_p profile_dir
       File.write File.join(profile_dir, 'profile.json'), 'existing'
 
-      profile.write(archive_path: archive_path, overwrite: true)
+      result = profile.write(archive_path: archive_path, overwrite: true)
 
+      expect(result).to eq(:overwritten)
       expect(Down).to have_received(:download)
       expect(File.exist?(File.join(profile_dir, 'profile.yaml'))).to be true
     end

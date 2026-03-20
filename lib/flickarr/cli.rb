@@ -66,8 +66,14 @@ module Flickarr
       photo   = Photo.new(info: query.info, sizes: query.sizes.size, exif: query.exif)
       archive = config.archive_path
 
-      photo.write(archive_path: archive, overwrite: @overwrite)
-      puts "Exported photo #{photo_id} to #{File.join(archive, photo.folder_path)}"
+      status = photo.write(archive_path: archive, overwrite: @overwrite)
+      path   = File.join archive, photo.folder_path
+
+      case status
+      when :created     then puts "Downloaded photo #{photo_id} to #{path}"
+      when :overwritten then puts "Re-downloaded photo #{photo_id} to #{path}"
+      when :skipped     then puts "Skipped photo #{photo_id} (already exists at #{path})"
+      end
     end
 
     def run_export_profile
@@ -83,8 +89,14 @@ module Flickarr
       profile  = Profile.new(person)
       archive  = config.archive_path
 
-      profile.write(archive_path: archive, overwrite: @overwrite)
-      puts "Exported profile to #{File.join(archive, '_profile')}"
+      status      = profile.write(archive_path: archive, overwrite: @overwrite)
+      profile_dir = File.join archive, '_profile'
+
+      case status
+      when :created     then puts "Downloaded profile to #{profile_dir}"
+      when :overwritten then puts "Re-downloaded profile to #{profile_dir}"
+      when :skipped     then puts "Skipped profile (already exists at #{profile_dir})"
+      end
     end
 
     def run_auth

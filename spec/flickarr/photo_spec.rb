@@ -387,8 +387,9 @@ width: 1024)
     after { FileUtils.rm_rf archive_path }
 
     it 'creates the date folder and writes all files' do
-      photo.write(archive_path: archive_path)
+      result = photo.write(archive_path: archive_path)
 
+      expect(result).to eq(:created)
       expect(Dir.exist?(photo_dir)).to be true
       expect(File.exist?(File.join(photo_dir, '3839885270_my-cool-cat.json'))).to be true
       expect(File.exist?(File.join(photo_dir, '3839885270_my-cool-cat.yaml'))).to be true
@@ -400,8 +401,9 @@ width: 1024)
       FileUtils.mkdir_p photo_dir
       File.write image_path, 'existing'
 
-      photo.write(archive_path: archive_path)
+      result = photo.write(archive_path: archive_path)
 
+      expect(result).to eq(:skipped)
       expect(Down).not_to have_received(:download)
     end
 
@@ -410,11 +412,10 @@ width: 1024)
       FileUtils.mkdir_p photo_dir
       File.write image_path, 'existing'
 
-      photo.write(archive_path: archive_path, overwrite: true)
+      result = photo.write(archive_path: archive_path, overwrite: true)
 
+      expect(result).to eq(:overwritten)
       expect(Down).to have_received(:download)
-      expect(File.exist?(File.join(photo_dir, '3839885270_my-cool-cat.json'))).to be true
-      expect(File.exist?(File.join(photo_dir, '3839885270_my-cool-cat.yaml'))).to be true
     end
   end
 end

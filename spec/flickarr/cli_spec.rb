@@ -221,7 +221,7 @@ RSpec.describe Flickarr::CLI do
 
       url = 'https://www.flickr.com/photos/testuser/3839885270'
       cli = described_class.new(['export:photo', url], config_path: config_path)
-      expect { cli.run }.to output(/Exported photo 3839885270/).to_stdout
+      expect { cli.run }.to output(/Downloaded photo 3839885270/).to_stdout
 
       expect(File.exist?(File.join(archive_path, '2024/03/15', '3839885270_my-cat.json'))).to be true
       expect(File.exist?(File.join(archive_path, '2024/03/15', '3839885270_my-cat.yaml'))).to be true
@@ -295,7 +295,7 @@ RSpec.describe Flickarr::CLI do
       allow(Down).to receive(:download)
 
       cli = described_class.new(['export:profile'], config_path: config_path)
-      expect { cli.run }.to output(/Exported profile to/).to_stdout
+      expect { cli.run }.to output(/Downloaded profile to/).to_stdout
 
       expect(File.exist?(File.join(archive_path, '_profile', 'profile.json'))).to be true
       expect(File.exist?(File.join(archive_path, '_profile', 'profile.yaml'))).to be true
