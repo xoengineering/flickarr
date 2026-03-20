@@ -76,4 +76,79 @@ RSpec.describe Flickarr::Client do
       expect(result).to eq(person_response)
     end
   end
+
+  describe '#photos' do
+    # Flickr gem uses dynamic method dispatch, so verified doubles won't work
+    let(:flickr_instance) { double('Flickr') } # rubocop:disable RSpec/VerifiedDoubles
+    let(:people_api) { double('people') } # rubocop:disable RSpec/VerifiedDoubles
+    let(:client) do
+      allow(Flickr).to receive(:new).and_return(flickr_instance)
+      described_class.new(config)
+    end
+
+    before do
+      allow(flickr_instance).to receive(:people).and_return(people_api)
+    end
+
+    it 'calls flickr.people.getPhotos with user_id, page, and per_page' do
+      photos_response = double('photos') # rubocop:disable RSpec/VerifiedDoubles
+      allow(people_api).to receive(:getPhotos)
+        .with(user_id: '123@N00', page: 1, per_page: 100)
+        .and_return(photos_response)
+
+      result = client.photos(user_id: '123@N00', page: 1, per_page: 100)
+
+      expect(result).to eq(photos_response)
+    end
+  end
+
+  describe '#photo_info' do
+    # Flickr gem uses dynamic method dispatch, so verified doubles won't work
+    let(:flickr_instance) { double('Flickr') } # rubocop:disable RSpec/VerifiedDoubles
+    let(:photos_api) { double('photos') } # rubocop:disable RSpec/VerifiedDoubles
+    let(:client) do
+      allow(Flickr).to receive(:new).and_return(flickr_instance)
+      described_class.new(config)
+    end
+
+    before do
+      allow(flickr_instance).to receive(:photos).and_return(photos_api)
+    end
+
+    it 'calls flickr.photos.getInfo with photo_id' do
+      info_response = double('info') # rubocop:disable RSpec/VerifiedDoubles
+      allow(photos_api).to receive(:getInfo)
+        .with(photo_id: '3839885270')
+        .and_return(info_response)
+
+      result = client.photo_info(photo_id: '3839885270')
+
+      expect(result).to eq(info_response)
+    end
+  end
+
+  describe '#photo_sizes' do
+    # Flickr gem uses dynamic method dispatch, so verified doubles won't work
+    let(:flickr_instance) { double('Flickr') } # rubocop:disable RSpec/VerifiedDoubles
+    let(:photos_api) { double('photos') } # rubocop:disable RSpec/VerifiedDoubles
+    let(:client) do
+      allow(Flickr).to receive(:new).and_return(flickr_instance)
+      described_class.new(config)
+    end
+
+    before do
+      allow(flickr_instance).to receive(:photos).and_return(photos_api)
+    end
+
+    it 'calls flickr.photos.getSizes with photo_id' do
+      sizes_response = double('sizes') # rubocop:disable RSpec/VerifiedDoubles
+      allow(photos_api).to receive(:getSizes)
+        .with(photo_id: '3839885270')
+        .and_return(sizes_response)
+
+      result = client.photo_sizes(photo_id: '3839885270')
+
+      expect(result).to eq(sizes_response)
+    end
+  end
 end
