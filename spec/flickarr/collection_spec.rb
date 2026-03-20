@@ -53,7 +53,7 @@ RSpec.describe Flickarr::Collection do
 
       expect(refs.length).to eq(2)
       expect(refs.first[:id]).to eq('72157663446734094')
-      expect(refs.first[:path]).to eq('sets/72157663446734094_2015-u-s--roadtrip')
+      expect(refs.first[:path]).to eq('Sets/72157663446734094_2015-u-s--roadtrip')
       expect(refs.first[:title]).to eq('2015 U.S. Roadtrip')
     end
   end
@@ -61,7 +61,7 @@ RSpec.describe Flickarr::Collection do
   describe '#write' do
     let(:archive_path) { Dir.mktmpdir('flickarr-collection-test') }
     let(:collection_dir) do
-      File.join(archive_path, 'collections', '375727-72157666222057746_littlemisadventuretime')
+      File.join(archive_path, 'Collections', '375727-72157666222057746_littlemisadventuretime')
     end
 
     after { FileUtils.rm_rf archive_path }
@@ -90,7 +90,7 @@ RSpec.describe Flickarr::Collection do
       refs = JSON.parse(File.read(File.join(collection_dir, 'sets.json')), symbolize_names: true)
       expect(refs.length).to eq(2)
       expect(refs.first[:id]).to eq('72157663446734094')
-      expect(refs.first[:path]).to eq('sets/72157663446734094_2015-u-s--roadtrip')
+      expect(refs.first[:path]).to eq('Sets/72157663446734094_2015-u-s--roadtrip')
     end
 
     it 'skips when collection.json already exists' do

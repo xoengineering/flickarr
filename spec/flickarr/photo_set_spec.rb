@@ -101,7 +101,7 @@ RSpec.describe Flickarr::PhotoSet do
 
   describe '#write' do
     let(:archive_path) { Dir.mktmpdir('flickarr-set-test') }
-    let(:set_dir) { File.join(archive_path, 'sets', '72157718538273371_amy-fleming') }
+    let(:set_dir) { File.join(archive_path, 'Sets', '72157718538273371_amy-fleming') }
 
     after { FileUtils.rm_rf archive_path }
 

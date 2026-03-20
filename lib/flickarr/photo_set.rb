@@ -114,7 +114,7 @@ module Flickarr
     end
 
     def dir_for_set archive_path
-      File.join archive_path, 'sets', dirname
+      File.join archive_path, 'Sets', dirname
     end
 
     def write_photos_files dir:

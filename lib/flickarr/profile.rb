@@ -166,7 +166,7 @@ module Flickarr
     end
 
     def profile_dir archive_path
-      File.join archive_path, 'profile'
+      File.join archive_path, 'Profile'
     end
   end
 end

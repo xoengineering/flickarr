@@ -54,14 +54,15 @@ module Flickarr
       count   = 0
 
       tree.each do |collection_data|
-        count += 1
-        collection = Collection.new(collection_data)
-        status     = collection.write(archive_path: archive, overwrite: @overwrite)
+        count      += 1
+        collection  = Collection.new(collection_data)
+        status      = collection.write(archive_path: archive, overwrite: @overwrite)
+        path        = File.join archive, 'Collections', collection.dirname
 
         case status
-        when :created     then puts "Downloaded collection #{collection.title} (#{count})"
-        when :overwritten then puts "Re-downloaded collection #{collection.title} (#{count})"
-        when :skipped     then puts "Skipped collection #{collection.title} (#{count})"
+        when :created     then puts "Downloaded collection to #{path} (#{count})"
+        when :overwritten then puts "Re-downloaded collection to #{path} (#{count})"
+        when :skipped     then puts "Skipped collection at #{path} (#{count})"
         end
       end
 
@@ -90,11 +91,12 @@ module Flickarr
 
         photo_set = PhotoSet.new(set: set_data, photo_items: photo_items)
         status    = photo_set.write(archive_path: archive, overwrite: @overwrite)
+        path      = File.join archive, 'Sets', photo_set.dirname
 
         case status
-        when :created     then puts "Downloaded set #{photo_set.title} (#{count}/#{total})"
-        when :overwritten then puts "Re-downloaded set #{photo_set.title} (#{count}/#{total})"
-        when :skipped     then puts "Skipped set #{photo_set.title} (#{count}/#{total})"
+        when :created     then puts "Downloaded set to #{path} (#{count}/#{total})"
+        when :overwritten then puts "Re-downloaded set to #{path} (#{count}/#{total})"
+        when :skipped     then puts "Skipped set at #{path} (#{count}/#{total})"
         end
       end
 
@@ -247,7 +249,7 @@ module Flickarr
       archive = config.archive_path
 
       status      = profile.write(archive_path: archive, overwrite: @overwrite)
-      profile_dir = File.join archive, 'profile'
+      profile_dir = File.join archive, 'Profile'
 
       case status
       when :created     then puts "Downloaded profile to #{profile_dir}"

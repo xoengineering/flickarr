@@ -341,9 +341,9 @@ RSpec.describe Flickarr::CLI do
       allow(collections_api).to receive(:getTree).and_return(tree_response)
 
       cli = described_class.new(['export:collections'], config_path: config_path)
-      expect { cli.run }.to output(/Downloaded collection My Collection/).to_stdout
+      expect { cli.run }.to output(/Downloaded collection to/).to_stdout
 
-      expect(Dir.exist?(File.join(archive_path, 'collections', '375727-123_my-collection'))).to be true
+      expect(Dir.exist?(File.join(archive_path, 'Collections', '375727-123_my-collection'))).to be true
     ensure
       FileUtils.rm_rf(dir)
     end
@@ -399,9 +399,9 @@ RSpec.describe Flickarr::CLI do
       allow(photosets_api).to receive_messages(getList: sets_response, getPhotos: photos_response)
 
       cli = described_class.new(['export:sets'], config_path: config_path)
-      expect { cli.run }.to output(/Downloaded set My Set/).to_stdout
+      expect { cli.run }.to output(/Downloaded set to/).to_stdout
 
-      expect(Dir.exist?(File.join(archive_path, 'sets', '72157718538273371_my-set'))).to be true
+      expect(Dir.exist?(File.join(archive_path, 'Sets', '72157718538273371_my-set'))).to be true
     ensure
       FileUtils.rm_rf(dir)
     end
@@ -584,8 +584,8 @@ RSpec.describe Flickarr::CLI do
       cli = described_class.new(['export:profile'], config_path: config_path)
       expect { cli.run }.to output(/Downloaded profile to/).to_stdout
 
-      expect(File.exist?(File.join(archive_path, 'profile', 'profile.json'))).to be true
-      expect(File.exist?(File.join(archive_path, 'profile', 'profile.yaml'))).to be true
+      expect(File.exist?(File.join(archive_path, 'Profile', 'profile.json'))).to be true
+      expect(File.exist?(File.join(archive_path, 'Profile', 'profile.yaml'))).to be true
     ensure
       FileUtils.rm_rf(dir)
     end

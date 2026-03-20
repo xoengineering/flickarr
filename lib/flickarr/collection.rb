@@ -32,7 +32,7 @@ module Flickarr
         {
           description: s.description.to_s,
           id:          s.id,
-          path:        File.join('sets', set_dirname),
+          path:        File.join('Sets', set_dirname),
           title:       s.title.to_s
         }
       end
@@ -70,7 +70,7 @@ module Flickarr
     private
 
     def collection_dir archive_path
-      File.join archive_path, 'collections', dirname
+      File.join archive_path, 'Collections', dirname
     end
 
     def deep_stringify_keys obj
