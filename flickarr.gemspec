@@ -33,7 +33,7 @@ Gem::Specification.new do |spec|
   spec.executables   = spec.files.grep(%r{\Aexe/}) { |f| File.basename(f) }
   spec.require_paths = ['lib']
 
-  spec.add_dependency 'cgi', '~> 0.4'
+  spec.add_dependency 'cgi', '~> 0.5'
   spec.add_dependency 'down', '~> 5.4'
   spec.add_dependency 'flickr', '~> 2.1'
   spec.add_dependency 'http', '~> 5.2'

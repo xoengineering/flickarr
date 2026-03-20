@@ -8,7 +8,7 @@ PATH
   remote: .
   specs:
     flickarr (0.1.0)
-      cgi (~> 0.4)
+      cgi (~> 0.5)
       down (~> 5.4)
       flickr (~> 2.1)
       http (~> 5.2)
