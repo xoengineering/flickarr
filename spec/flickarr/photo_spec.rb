@@ -1,5 +1,9 @@
 # rubocop:disable RSpec/VerifiedDoubles
+require 'down'
+require 'json'
 require 'slugify'
+require 'tmpdir'
+require 'yaml'
 
 RSpec.describe Flickarr::Photo do
   let(:info_response) do
@@ -162,6 +166,75 @@ RSpec.describe Flickarr::Photo do
       expect(hash[:original_url]).to eq('https://live.staticflickr.com/o.jpg')
       expect(hash[:tags]).to eq(%w[cat pet])
       expect(hash[:title]).to eq('My Cool Cat!')
+    end
+  end
+
+  describe '#download' do
+    let(:archive_path) { Dir.mktmpdir('flickarr-photo-test') }
+
+    after { FileUtils.rm_rf archive_path }
+
+    it 'downloads the original image to the correct path' do
+      dest = File.join(archive_path, '2024/03/15', '3839885270_my-cool-cat.jpg')
+      allow(Down).to receive(:download).with(photo.original_url, destination: dest)
+
+      photo.download(archive_path: archive_path)
+
+      expect(Down).to have_received(:download).with(photo.original_url, destination: dest)
+    end
+  end
+
+  describe '#write_json' do
+    let(:archive_path) { Dir.mktmpdir('flickarr-photo-test') }
+    let(:photo_dir) { File.join(archive_path, '2024/03/15') }
+
+    after { FileUtils.rm_rf archive_path }
+
+    it 'writes a JSON sidecar file' do
+      photo.write_json(archive_path: archive_path)
+
+      json_path = File.join(photo_dir, '3839885270_my-cool-cat.json')
+      expect(File.exist?(json_path)).to be true
+
+      data = JSON.parse(File.read(json_path), symbolize_names: true)
+      expect(data[:id]).to eq('3839885270')
+      expect(data[:title]).to eq('My Cool Cat!')
+    end
+  end
+
+  describe '#write_yaml' do
+    let(:archive_path) { Dir.mktmpdir('flickarr-photo-test') }
+    let(:photo_dir) { File.join(archive_path, '2024/03/15') }
+
+    after { FileUtils.rm_rf archive_path }
+
+    it 'writes a YAML sidecar file' do
+      photo.write_yaml(archive_path: archive_path)
+
+      yaml_path = File.join(photo_dir, '3839885270_my-cool-cat.yaml')
+      expect(File.exist?(yaml_path)).to be true
+
+      data = YAML.load_file(yaml_path, symbolize_names: true)
+      expect(data[:id]).to eq('3839885270')
+      expect(data[:title]).to eq('My Cool Cat!')
+    end
+  end
+
+  describe '#write' do
+    let(:archive_path) { Dir.mktmpdir('flickarr-photo-test') }
+    let(:photo_dir) { File.join(archive_path, '2024/03/15') }
+
+    before { allow(Down).to receive(:download) }
+
+    after { FileUtils.rm_rf archive_path }
+
+    it 'creates the date folder and writes all files' do
+      photo.write(archive_path: archive_path)
+
+      expect(Dir.exist?(photo_dir)).to be true
+      expect(File.exist?(File.join(photo_dir, '3839885270_my-cool-cat.json'))).to be true
+      expect(File.exist?(File.join(photo_dir, '3839885270_my-cool-cat.yaml'))).to be true
+      expect(Down).to have_received(:download)
     end
   end
 end

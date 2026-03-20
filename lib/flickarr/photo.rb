@@ -1,5 +1,9 @@
 require 'date'
+require 'down'
+require 'fileutils'
+require 'json'
 require 'slugify'
+require 'yaml'
 
 module Flickarr
   class Photo
@@ -62,6 +66,46 @@ module Flickarr
         tags:         tags,
         title:        title
       }
+    end
+
+    def download archive_path:
+      dir  = photo_dir archive_path
+      dest = File.join dir, "#{basename}.#{extension}"
+
+      FileUtils.mkdir_p dir
+      Down.download original_url, destination: dest
+    end
+
+    def write archive_path:
+      dir = photo_dir archive_path
+
+      FileUtils.mkdir_p dir
+      download archive_path: archive_path
+      write_json archive_path: archive_path
+      write_yaml archive_path: archive_path
+    end
+
+    def write_json archive_path:
+      dir  = photo_dir archive_path
+      json = JSON.pretty_generate to_h
+
+      FileUtils.mkdir_p dir
+      File.write File.join(dir, "#{basename}.json"), json
+    end
+
+    def write_yaml archive_path:
+      dir  = photo_dir archive_path
+      hash = to_h.transform_keys(&:to_s)
+      yaml = YAML.dump hash
+
+      FileUtils.mkdir_p dir
+      File.write File.join(dir, "#{basename}.yaml"), yaml
+    end
+
+    private
+
+    def photo_dir archive_path
+      File.join archive_path, folder_path
     end
   end
 end
