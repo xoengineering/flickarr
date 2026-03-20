@@ -303,8 +303,7 @@ module Flickarr
 
       client     = Client.new(config)
       archive    = config.archive_path
-      page_key   = last_page_key(media)
-      last_page  = config.send(page_key)
+      last_page  = read_last_page(config, media)
       start_page = last_page ? last_page + 1 : 1
       per_page   = 100
       page       = start_page
@@ -339,7 +338,7 @@ module Flickarr
             throw(:stop_export) if @limit && run_count >= @limit
           end
 
-          config.send("#{page_key}=", page)
+          write_last_page config, media, page
           config.save @config_path
 
           break if page >= total_pages
@@ -349,7 +348,7 @@ module Flickarr
       end
 
       if interrupted
-        config.send("#{page_key}=", page - 1)
+        write_last_page config, media, page - 1
         config.save @config_path
       end
 
@@ -358,11 +357,19 @@ module Flickarr
       puts "Done. #{run_count} posts processed this run."
     end
 
-    def last_page_key media
+    def read_last_page config, media
       case media
-      when 'photos' then :last_page_photos
-      when 'videos' then :last_page_videos
-      else               :last_page_posts
+      when 'photos' then config.last_page_photos
+      when 'videos' then config.last_page_videos
+      else               config.last_page_posts
+      end
+    end
+
+    def write_last_page config, media, page
+      case media
+      when 'photos' then config.last_page_photos = page
+      when 'videos' then config.last_page_videos = page
+      else               config.last_page_posts = page
       end
     end
 
