@@ -3,8 +3,9 @@ require 'optparse'
 module Flickarr
   class CLI
     DEFAULT_CONFIG_PATH = File.join(Dir.home, '.flickarr', 'config.yml').freeze
-    VALID_CONFIG_KEYS = %i[access_secret access_token api_key last_export_page library_path shared_secret
-                           total_collections total_photos total_sets total_videos user_nsid username].freeze
+    VALID_CONFIG_KEYS = %i[access_secret access_token api_key last_page_photos last_page_posts last_page_videos
+                           library_path shared_secret total_collections total_photos total_sets total_videos
+                           user_nsid username].freeze
 
     def initialize args, config_path: DEFAULT_CONFIG_PATH
       @config_path = config_path
@@ -302,8 +303,9 @@ module Flickarr
 
       client     = Client.new(config)
       archive    = config.archive_path
-      last_page  = config.last_export_page
-      start_page = media == 'all' && last_page ? last_page + 1 : 1
+      page_key   = last_page_key(media)
+      last_page  = config.send(page_key)
+      start_page = last_page ? last_page + 1 : 1
       per_page   = 100
       page       = start_page
       count      = (start_page - 1) * per_page
@@ -337,10 +339,8 @@ module Flickarr
             throw(:stop_export) if @limit && run_count >= @limit
           end
 
-          if media == 'all'
-            config.last_export_page = page
-            config.save @config_path
-          end
+          config.send("#{page_key}=", page)
+          config.save @config_path
 
           break if page >= total_pages
 
@@ -348,14 +348,22 @@ module Flickarr
         end
       end
 
-      if interrupted && media == 'all'
-        config.last_export_page = page - 1
+      if interrupted
+        config.send("#{page_key}=", page - 1)
         config.save @config_path
       end
 
       puts "\nInterrupted. Saved progress at page #{page}." if interrupted
       puts "Reached limit of #{@limit} posts." if !interrupted && @limit && run_count >= @limit
       puts "Done. #{run_count} posts processed this run."
+    end
+
+    def last_page_key media
+      case media
+      when 'photos' then :last_page_photos
+      when 'videos' then :last_page_videos
+      else               :last_page_posts
+      end
     end
 
     def fetch_posts_page client:, config:, media:, page:
@@ -495,7 +503,9 @@ module Flickarr
       when 'access_secret'     then config.access_secret = value
       when 'access_token'      then config.access_token = value
       when 'api_key'           then config.api_key = value
-      when 'last_export_page'  then config.last_export_page = value.to_i
+      when 'last_page_photos'  then config.last_page_photos = value.to_i
+      when 'last_page_posts'   then config.last_page_posts = value.to_i
+      when 'last_page_videos'  then config.last_page_videos = value.to_i
       when 'library_path'      then config.library_path = value
       when 'shared_secret'     then config.shared_secret = value
       when 'total_collections' then config.total_collections = value.to_i

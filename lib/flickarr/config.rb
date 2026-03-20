@@ -5,14 +5,17 @@ module Flickarr
   class Config
     DEFAULT_LIBRARY_PATH = File.join(Dir.home, 'Pictures', 'Flickarr').freeze
 
-    attr_accessor :access_secret, :access_token, :api_key, :last_export_page, :library_path, :shared_secret,
-                  :total_collections, :total_photos, :total_sets, :total_videos, :user_nsid, :username
+    attr_accessor :access_secret, :access_token, :api_key, :last_page_photos, :last_page_posts, :last_page_videos,
+                  :library_path, :shared_secret, :total_collections, :total_photos, :total_sets, :total_videos,
+                  :user_nsid, :username
 
     def initialize
       @access_secret = nil
       @access_token = nil
       @api_key = ENV.fetch('FLICKARR_API_KEY', nil)
-      @last_export_page = nil
+      @last_page_photos = nil
+      @last_page_posts = nil
+      @last_page_videos = nil
       @library_path = DEFAULT_LIBRARY_PATH
       @shared_secret = ENV.fetch('FLICKARR_SHARED_SECRET', nil)
       @total_collections = nil
@@ -43,7 +46,9 @@ module Flickarr
         access_secret:     access_secret,
         access_token:      access_token,
         api_key:           api_key,
-        last_export_page:  last_export_page,
+        last_page_photos:  last_page_photos,
+        last_page_posts:   last_page_posts,
+        last_page_videos:  last_page_videos,
         library_path:      library_path,
         shared_secret:     shared_secret,
         total_collections: total_collections,
@@ -65,7 +70,9 @@ module Flickarr
       config.access_secret     = yaml[:access_secret]     if yaml[:access_secret]
       config.access_token      = yaml[:access_token]      if yaml[:access_token]
       config.api_key           = yaml[:api_key]           if yaml[:api_key]
-      config.last_export_page  = yaml[:last_export_page]  if yaml[:last_export_page]
+      config.last_page_photos  = yaml[:last_page_photos]  if yaml[:last_page_photos]
+      config.last_page_posts   = yaml[:last_page_posts]   if yaml[:last_page_posts]
+      config.last_page_videos  = yaml[:last_page_videos]  if yaml[:last_page_videos]
       config.library_path      = yaml[:library_path]      if yaml[:library_path]
       config.shared_secret     = yaml[:shared_secret]     if yaml[:shared_secret]
       config.total_collections = yaml[:total_collections] if yaml[:total_collections]
