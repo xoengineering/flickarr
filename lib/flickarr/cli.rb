@@ -45,7 +45,7 @@ module Flickarr
       OptionParser.new do |opts|
         opts.banner = 'Usage: flickarr <command> [options]'
 
-        opts.on('--limit N', Integer, 'Stop after N photos (export:photos only)') do |n|
+        opts.on('--limit N', Integer, 'Stop after N items') do |n|
           @limit = n
         end
 
@@ -92,8 +92,11 @@ module Flickarr
         when :overwritten then puts "  Re-downloaded to #{path}"
         when :skipped     then puts "  Skipped at #{path}"
         end
+
+        break if @limit && count >= @limit
       end
 
+      puts "Reached limit of #{@limit} collections." if @limit && count >= @limit
       puts "Done. #{count} collections processed."
     end
 
@@ -127,6 +130,8 @@ module Flickarr
         when :overwritten then puts "  Re-downloaded to #{path}"
         when :skipped     then puts "  Skipped at #{path}"
         end
+
+        break if @limit && count >= @limit
       end
 
       puts "Done. #{count} sets processed."

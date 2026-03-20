@@ -6,8 +6,8 @@ Gem::Specification.new do |spec|
   spec.authors = ['Shane Becker']
   spec.email   = ['veganstraightedge@gmail.com']
 
-  spec.summary     = 'Export and archive your Flickr photo library'
-  spec.description = 'Flickarr exports and archives your Flickr photo library — photos, metadata, tags, albums, and more.'
+  spec.summary     = 'Export and archive your Flickr library'
+  spec.description = 'Flickarr exports and archives your Flickr library — photos, videos, metadata, tags, albums, and more.'
   spec.homepage    = 'https://github.com/veganstraightedge/flickarr'
   spec.license     = 'MIT'
 
