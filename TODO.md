@@ -6,7 +6,7 @@
 
 ## Features
 - [ ] Export sets/collections as folders of reference files
-- [ ] Graceful Ctrl+C handling (save progress, resume later)
+- [x] Graceful Ctrl+C handling (save progress, resume later)
 - [x] Resume state: save last photo ID/page after export:photos, start from there next run
 - [ ] `flickarr status` command (show progress, photo count, etc.)
 - [ ] Retry on transient network failures (5xx, timeouts)
