@@ -5,6 +5,7 @@ module Flickarr
 
     def initialize args, config_path: DEFAULT_CONFIG_PATH
       @config_path = config_path
+      @limit       = extract_option(args, '--limit')&.to_i
       @overwrite   = args.delete('--overwrite') ? true : false
       @args        = args
     end
@@ -97,20 +98,25 @@ module Flickarr
       page    = 1
       count   = 0
 
-      loop do
-        response = client.photos(user_id: config.user_nsid, page: page)
-        total    = response.total.to_i
+      catch(:limit_reached) do
+        loop do
+          response = client.photos(user_id: config.user_nsid, page: page)
+          total    = response.total.to_i
 
-        response.each do |list_photo|
-          count += 1
-          export_single_photo(client: client, photo_id: list_photo.id, archive: archive, count: count, total: total)
+          response.each do |list_photo|
+            count += 1
+            export_single_photo(client: client, photo_id: list_photo.id, archive: archive, count: count, total: total)
+
+            throw(:limit_reached) if @limit && count >= @limit
+          end
+
+          break if page >= response.pages.to_i
+
+          page += 1
         end
-
-        break if page >= response.pages.to_i
-
-        page += 1
       end
 
+      puts "Reached limit of #{@limit} photos." if @limit && count >= @limit
       puts "Done. #{count} photos processed."
     end
 
@@ -252,8 +258,17 @@ module Flickarr
           init                Create config directory and stub config file
 
         Options:
+          --limit N           Stop after N photos (export:photos only)
           --overwrite         Re-download and overwrite existing files
       USAGE
+    end
+
+    def extract_option args, flag
+      index = args.index(flag)
+      return nil unless index
+
+      args.delete_at(index)
+      args.delete_at(index)
     end
   end
 end

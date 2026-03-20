@@ -238,6 +238,61 @@ RSpec.describe Flickarr::CLI do
       cli = described_class.new(['export:photos'], config_path: '/tmp/nonexistent-flickarr.yml')
       expect { cli.run }.to output(/Not authenticated/).to_stderr
     end
+
+    it 'respects --limit flag' do
+      dir = File.join(Dir.tmpdir, "flickarr-cli-test-#{Process.pid}")
+      config_path = File.join(dir, 'config.yml')
+      FileUtils.mkdir_p(dir)
+
+      config = Flickarr::Config.new
+      config.api_key = 'test-key'
+      config.shared_secret = 'test-secret'
+      config.access_token = 'token'
+      config.access_secret = 'secret'
+      config.user_nsid = '123@N00'
+      config.username = 'testuser'
+      config.library_path = File.join(dir, 'library')
+      config.save(config_path)
+
+      flickr_instance = double('Flickr')
+      allow(Flickr).to receive(:new).and_return(flickr_instance)
+      allow(flickr_instance).to receive(:access_token=)
+      allow(flickr_instance).to receive(:access_secret=)
+
+      people_api = double('people')
+      photos_api = double('photos')
+      allow(flickr_instance).to receive_messages(people: people_api, photos: photos_api)
+
+      first_photo = double('first_photo', id: '111')
+      second_photo = double('second_photo', id: '222')
+      list_response = double('list_response', pages: 1, total: 2)
+      allow(list_response).to receive(:each).and_yield(first_photo).and_yield(second_photo)
+      allow(people_api).to receive(:getPhotos).and_return(list_response)
+
+      dates = double('dates', taken: '2024-03-15 14:30:00', posted: '1710500000', takenunknown: 0, lastupdate: '1710600000')
+      owner = double('owner', nsid: '123@N00', realname: 'Test', username: 'testuser')
+      vis = double('visibility', isfamily: 0, isfriend: 0, ispublic: 1)
+      photo_url = double('url', type: 'photopage', to_s: 'https://www.flickr.com/photos/testuser/111/')
+
+      info = double(
+        'info',
+        dates: dates, description: 'A', id: '111', license: '0', media: 'photo',
+        originalformat: 'jpg', owner: owner, tags: double('tags', tag: []),
+        title: 'Photo', urls: double('urls', url: [photo_url]), views: '0', visibility: vis
+      )
+      original = double('size', height: 1200, label: 'Original',
+                                source: 'https://live.staticflickr.com/o.jpg', media: 'photo', width: 1600)
+      sizes = double('sizes', size: [original])
+      exif = double('exif', camera: 'Canon', exif: [])
+
+      allow(photos_api).to receive_messages(getInfo: info, getSizes: sizes, getExif: exif)
+      allow(Down).to receive(:download)
+
+      cli = described_class.new(['export:photos', '--limit', '1'], config_path: config_path)
+      expect { cli.run }.to output(/Reached limit of 1/).to_stdout
+    ensure
+      FileUtils.rm_rf(dir)
+    end
   end
 
   describe 'export:photo command' do
