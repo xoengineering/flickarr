@@ -411,9 +411,10 @@ width: 1024)
 
       it 'downloads both the video and poster frame' do
         redirect_url = 'https://live.staticflickr.com/video/123/abc/orig.mp4?s=token'
-        redirect_response = Net::HTTPFound.new('1.1', '302', 'Found')
-        redirect_response['location'] = redirect_url
-        allow(Net::HTTP).to receive(:get_response).and_return(redirect_response)
+        status = instance_double(HTTP::Response::Status, redirect?: true)
+        headers = { 'Location' => redirect_url }
+        redirect_response = instance_double(HTTP::Response, status: status, headers: headers)
+        allow(HTTP).to receive(:head).and_return(redirect_response)
         allow(Down).to receive(:download)
 
         photo.download(archive_path: archive_path)

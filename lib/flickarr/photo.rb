@@ -2,7 +2,7 @@ require 'date'
 require 'down'
 require 'fileutils'
 require 'json'
-require 'net/http'
+require 'http'
 require 'slugify'
 require 'yaml'
 
@@ -171,10 +171,9 @@ module Flickarr
       url = original_url
       return url unless media == 'video'
 
-      uri      = URI(url)
-      response = Net::HTTP.get_response(uri)
+      response = HTTP.head(url)
 
-      response.is_a?(Net::HTTPRedirection) ? response['location'] : url
+      response.status.redirect? ? response.headers['Location'] : url
     end
 
     def extract_exif exif_response
