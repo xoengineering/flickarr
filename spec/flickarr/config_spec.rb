@@ -126,8 +126,15 @@ RSpec.describe Flickarr::Config do
       expect(config.archive_path).to eq(File.join(Dir.home, 'Pictures', 'Flickarr', 'testuser'))
     end
 
-    it 'returns nil when username is not set' do
+    it 'returns nil when username is nil' do
       config = described_class.new
+
+      expect(config.archive_path).to be_nil
+    end
+
+    it 'returns nil when username is blank' do
+      config = described_class.new
+      config.username = ''
 
       expect(config.archive_path).to be_nil
     end

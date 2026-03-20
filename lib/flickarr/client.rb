@@ -5,8 +5,8 @@ module Flickarr
     attr_reader :flickr
 
     def initialize config
-      raise ConfigError, 'api_key is required' unless config.api_key
-      raise ConfigError, 'shared_secret is required' unless config.shared_secret
+      raise ConfigError, 'api_key is required' if config.api_key.nil? || config.api_key.empty?
+      raise ConfigError, 'shared_secret is required' if config.shared_secret.nil? || config.shared_secret.empty?
 
       @flickr = Flickr.new config.api_key, config.shared_secret
 

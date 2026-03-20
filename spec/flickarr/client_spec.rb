@@ -29,14 +29,26 @@ RSpec.describe Flickarr::Client do
       expect(flickr_instance).to have_received(:access_secret=).with('my-secret')
     end
 
-    it 'raises ConfigError when api_key is missing' do
+    it 'raises ConfigError when api_key is nil' do
       config.api_key = nil
 
       expect { described_class.new(config) }.to raise_error(Flickarr::ConfigError, /api_key/)
     end
 
-    it 'raises ConfigError when shared_secret is missing' do
+    it 'raises ConfigError when api_key is blank' do
+      config.api_key = ''
+
+      expect { described_class.new(config) }.to raise_error(Flickarr::ConfigError, /api_key/)
+    end
+
+    it 'raises ConfigError when shared_secret is nil' do
       config.shared_secret = nil
+
+      expect { described_class.new(config) }.to raise_error(Flickarr::ConfigError, /shared_secret/)
+    end
+
+    it 'raises ConfigError when shared_secret is blank' do
+      config.shared_secret = ''
 
       expect { described_class.new(config) }.to raise_error(Flickarr::ConfigError, /shared_secret/)
     end

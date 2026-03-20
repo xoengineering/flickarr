@@ -27,7 +27,7 @@ module Flickarr
     end
 
     def archive_path
-      return nil unless username
+      return nil if username.nil? || username.empty?
 
       File.join library_path, username
     end
