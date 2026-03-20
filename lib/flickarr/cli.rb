@@ -96,7 +96,8 @@ module Flickarr
 
       client     = Client.new(config)
       archive    = config.archive_path
-      start_page = config.last_export_page || 1
+      last_page  = config.last_export_page
+      start_page = last_page ? last_page + 1 : 1
       page       = start_page
       count      = 0
 
