@@ -44,13 +44,12 @@ module Flickarr
     end
 
     def download_avatar archive_path:
-      dir      = profile_dir archive_path
-      ext      = File.extname avatar_url
-      dest     = File.join dir, "avatar#{ext}"
-      tempfile = Down.download avatar_url
+      dir  = profile_dir archive_path
+      ext  = File.extname avatar_url
+      dest = File.join dir, "avatar#{ext}"
 
       FileUtils.mkdir_p dir
-      FileUtils.mv tempfile.path, dest
+      Down.download avatar_url, destination: dest
     end
 
     def to_h

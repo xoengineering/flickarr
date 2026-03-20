@@ -1,6 +1,5 @@
 require 'down'
 require 'json'
-require 'tempfile'
 require 'tmpdir'
 require 'yaml'
 
@@ -165,26 +164,18 @@ RSpec.describe Flickarr::Profile do
   describe '#download_avatar' do
     let(:archive_path) { Dir.mktmpdir('flickarr-profile-test') }
     let(:profile_dir) { File.join(archive_path, '_profile') }
-    let(:tempfile) do
-      file = Tempfile.new(['avatar', '.jpg'])
-      file.write('fake image data')
-      file.rewind
-      file
-    end
 
-    after do
-      tempfile.close!
-      FileUtils.rm_rf archive_path
-    end
+    after { FileUtils.rm_rf archive_path }
 
     it 'downloads the avatar to the _profile directory' do
-      allow(Down).to receive(:download).with(profile.avatar_url).and_return(tempfile)
+      avatar_path = File.join(profile_dir, 'avatar.jpg')
+      allow(Down).to receive(:download)
+        .with(profile.avatar_url, destination: avatar_path)
 
       profile.download_avatar(archive_path: archive_path)
 
-      avatar_path = File.join(profile_dir, 'avatar.jpg')
-      expect(File.exist?(avatar_path)).to be true
-      expect(File.read(avatar_path)).to eq('fake image data')
+      expect(Down).to have_received(:download)
+        .with(profile.avatar_url, destination: avatar_path)
     end
 
     it 'uses the extension from the avatar URL' do
@@ -205,32 +196,26 @@ RSpec.describe Flickarr::Profile do
         username:    'testuser'
       )
       gif_profile = described_class.new(gif_response)
-      allow(Down).to receive(:download).with(gif_profile.avatar_url).and_return(tempfile)
+      avatar_path = File.join(profile_dir, 'avatar.gif')
+      allow(Down).to receive(:download)
+        .with(gif_profile.avatar_url, destination: avatar_path)
 
       gif_profile.download_avatar(archive_path: archive_path)
 
-      expect(File.exist?(File.join(profile_dir, 'avatar.gif'))).to be true
+      expect(Down).to have_received(:download)
+        .with(gif_profile.avatar_url, destination: avatar_path)
     end
   end
 
   describe '#write' do
     let(:archive_path) { Dir.mktmpdir('flickarr-profile-test') }
     let(:profile_dir) { File.join(archive_path, '_profile') }
-    let(:tempfile) do
-      file = Tempfile.new(['avatar', '.jpg'])
-      file.write('fake image data')
-      file.rewind
-      file
-    end
 
     before do
-      allow(Down).to receive(:download).and_return(tempfile)
+      allow(Down).to receive(:download)
     end
 
-    after do
-      tempfile.close!
-      FileUtils.rm_rf archive_path
-    end
+    after { FileUtils.rm_rf archive_path }
 
     it 'creates the _profile directory' do
       profile.write(archive_path: archive_path)
@@ -238,12 +223,12 @@ RSpec.describe Flickarr::Profile do
       expect(Dir.exist?(profile_dir)).to be true
     end
 
-    it 'writes JSON, YAML, and avatar files' do
+    it 'writes JSON, YAML, and downloads avatar' do
       profile.write(archive_path: archive_path)
 
       expect(File.exist?(File.join(profile_dir, 'profile.json'))).to be true
       expect(File.exist?(File.join(profile_dir, 'profile.yaml'))).to be true
-      expect(File.exist?(File.join(profile_dir, 'avatar.jpg'))).to be true
+      expect(Down).to have_received(:download)
     end
   end
 end
