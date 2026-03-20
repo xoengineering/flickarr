@@ -22,8 +22,36 @@ module Flickarr
       PhotoQuery.new(flickr: flickr, id: id)
     end
 
+    PHOTO_EXTRAS = %w[
+      date_taken
+      date_upload
+      description
+      geo
+      icon_server
+      last_update
+      license
+      machine_tags
+      media
+      o_dims
+      original_format
+      owner_name
+      path_alias
+      tags
+      url_c
+      url_l
+      url_m
+      url_n
+      url_o
+      url_q
+      url_s
+      url_sq
+      url_t
+      url_z
+      views
+    ].join(',').freeze
+
     def photos user_id:, page: 1, per_page: 100
-      flickr.people.getPhotos(user_id: user_id, page: page, per_page: per_page)
+      flickr.people.getPhotos(user_id: user_id, page: page, per_page: per_page, extras: PHOTO_EXTRAS)
     end
 
     def profile user_id:

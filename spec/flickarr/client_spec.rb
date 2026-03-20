@@ -95,10 +95,10 @@ RSpec.describe Flickarr::Client do
       allow(flickr_instance).to receive(:people).and_return(people_api)
     end
 
-    it 'calls flickr.people.getPhotos with user_id, page, and per_page' do
+    it 'calls flickr.people.getPhotos with user_id, page, per_page, and extras' do
       photos_response = double('photos')
       allow(people_api).to receive(:getPhotos)
-        .with(user_id: '123@N00', page: 1, per_page: 100)
+        .with(user_id: '123@N00', page: 1, per_page: 100, extras: Flickarr::Client::PHOTO_EXTRAS)
         .and_return(photos_response)
 
       result = client.photos(user_id: '123@N00', page: 1, per_page: 100)
