@@ -44,7 +44,7 @@ module Flickarr
       @location = extract_location info
       @sizes    = sizes
       @urls     = extract_urls info
-      @camera   = exif_camera exif
+      @camera   = exif&.camera.to_s if exif
       @exif     = extract_exif exif
     end
 
@@ -89,9 +89,9 @@ module Flickarr
       {
         camera:       camera,
         dates:        {
+          lastupdate:   @dates.respond_to?(:lastupdate) ? @dates.lastupdate.to_s : '',
           posted:       @dates.posted.to_s,
           taken:        @dates.taken.to_s,
-          lastupdate:   safe_call(@dates, :lastupdate).to_s,
           takenunknown: @dates.takenunknown.to_i
         },
         description:  description,
@@ -148,56 +148,47 @@ module Flickarr
       end
     end
 
-    def exif_camera exif_response
-      return nil unless exif_response
-
-      safe_call(exif_response, :camera).to_s
-    end
-
     def extract_exif exif_response
       return [] unless exif_response
+      return [] unless exif_response.respond_to?(:exif)
 
-      tags = safe_call(exif_response, :exif)
-      return [] unless tags.respond_to?(:map)
-
-      tags.map do |tag|
-        raw   = safe_call(tag, :raw).to_s
-        clean = safe_call(tag, :clean)
-
+      exif_response.exif.map do |tag|
         {
+          clean:    tag.respond_to?(:clean) ? tag.clean&.to_s : nil,
           label:    tag.label.to_s,
-          raw:      raw,
-          clean:    clean&.to_s,
+          raw:      tag.raw.to_s,
           tag:      tag.tag.to_s,
           tagspace: tag.tagspace.to_s
         }
       end
     end
 
-    def extract_owner info
-      o = safe_call(info, :owner)
-      return {} unless o
+    def extract_location info
+      return nil unless info.respond_to?(:location)
+
+      loc = info.location
 
       {
-        nsid:     safe_call(o, :nsid).to_s,
-        realname: safe_call(o, :realname).to_s,
-        username: safe_call(o, :username).to_s
+        accuracy:  loc.accuracy.to_s,
+        context:   loc.context.to_s,
+        country:   loc.country.to_s,
+        county:    loc.county.to_s,
+        latitude:  loc.latitude.to_s,
+        locality:  loc.locality.to_s,
+        longitude: loc.longitude.to_s,
+        region:    loc.region.to_s
       }
     end
 
-    def extract_location info
-      loc = safe_call(info, :location)
-      return nil unless loc
+    def extract_owner info
+      return {} unless info.respond_to?(:owner)
+
+      o = info.owner
 
       {
-        accuracy:  safe_call(loc, :accuracy).to_s,
-        context:   safe_call(loc, :context).to_s,
-        country:   safe_call(loc, :country).to_s,
-        county:    safe_call(loc, :county).to_s,
-        latitude:  safe_call(loc, :latitude).to_s,
-        locality:  safe_call(loc, :locality).to_s,
-        longitude: safe_call(loc, :longitude).to_s,
-        region:    safe_call(loc, :region).to_s
+        nsid:     o.nsid.to_s,
+        realname: o.realname.to_s,
+        username: o.username.to_s
       }
     end
 
@@ -213,24 +204,24 @@ module Flickarr
     end
 
     def extract_tags info
-      tag_list = safe_call(info.tags, :tag)
-      return [] unless tag_list.respond_to?(:map)
+      return [] unless info.tags.respond_to?(:tag)
 
-      tag_list.map(&:_content)
+      info.tags.tag.map(&:_content)
     end
 
     def extract_urls info
-      url_list = safe_call(safe_call(info, :urls), :url)
-      return {} unless url_list.respond_to?(:map)
+      return {} unless info.respond_to?(:urls)
+      return {} unless info.urls.respond_to?(:url)
 
-      url_list.to_h do |url|
+      info.urls.url.to_h do |url|
         [url.type.to_s, url.to_s]
       end
     end
 
     def extract_visibility info
-      vis = safe_call(info, :visibility)
-      return {} unless vis
+      return {} unless info.respond_to?(:visibility)
+
+      vis = info.visibility
 
       {
         isfamily: vis.isfamily.to_i,
@@ -241,10 +232,6 @@ module Flickarr
 
     def photo_dir archive_path
       File.join archive_path, folder_path
-    end
-
-    def safe_call obj, method
-      obj.respond_to?(method) ? obj.send(method) : nil
     end
   end
 end
