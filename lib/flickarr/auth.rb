@@ -27,7 +27,7 @@ module Flickarr
 
       @config.access_token  = flickr.access_token
       @config.access_secret = flickr.access_secret
-      @config.user_nsid     = login.nsid
+      @config.user_nsid     = login.id
       @config.username      = login.username
 
       @config.save @config_path

@@ -43,7 +43,7 @@ RSpec.describe Flickarr::Auth do
       allow(flickr_instance).to receive(:get_authorize_url).with('req-token', perms: 'read').and_return('https://flickr.com/auth')
       allow(flickr_instance).to receive(:get_access_token).with('req-token', 'req-secret', '12345')
 
-      login = double('login', nsid: '123@N00', username: 'testuser')
+      login = double('login', id: '123@N00', username: 'testuser')
       test_namespace = double('test', login: login)
       allow(flickr_instance).to receive_messages(get_request_token: request_token, access_token: 'access-token',
                                                  access_secret: 'access-secret', test: test_namespace)
