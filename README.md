@@ -1,6 +1,6 @@
 # Flickarr
 
-Export and archive your Flickr library — photos, videos, metadata, tags, albums, collections, and profile.
+Export an archive of your Flickr library — photos, videos, metadata, tags, albums, collections, and profile.
 
 ## What you get
 
