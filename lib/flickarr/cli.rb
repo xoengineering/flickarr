@@ -1,7 +1,8 @@
 module Flickarr
   class CLI
     DEFAULT_CONFIG_PATH = File.join(Dir.home, '.flickarr', 'config.yml').freeze
-    VALID_CONFIG_KEYS = %i[access_secret access_token api_key library_path shared_secret user_nsid username].freeze
+    VALID_CONFIG_KEYS = %i[access_secret access_token api_key last_export_page library_path shared_secret user_nsid
+                           username].freeze
 
     def initialize args, config_path: DEFAULT_CONFIG_PATH
       @config_path = config_path
@@ -93,10 +94,13 @@ module Flickarr
         return
       end
 
-      client  = Client.new(config)
-      archive = config.archive_path
-      page    = 1
-      count   = 0
+      client     = Client.new(config)
+      archive    = config.archive_path
+      start_page = config.last_export_page || 1
+      page       = start_page
+      count      = 0
+
+      puts "Starting from page #{page}..." if page > 1
 
       catch(:limit_reached) do
         loop do
@@ -109,6 +113,9 @@ module Flickarr
 
             throw(:limit_reached) if @limit && count >= @limit
           end
+
+          config.last_export_page = page
+          config.save @config_path
 
           break if page >= response.pages.to_i
 
@@ -223,13 +230,14 @@ module Flickarr
 
     def set_config_attr config, key, value
       case key
-      when 'access_secret' then config.access_secret = value
-      when 'access_token'  then config.access_token = value
-      when 'api_key'       then config.api_key = value
-      when 'library_path'  then config.library_path = value
-      when 'shared_secret' then config.shared_secret = value
-      when 'user_nsid'     then config.user_nsid = value
-      when 'username'      then config.username = value
+      when 'access_secret'    then config.access_secret = value
+      when 'access_token'     then config.access_token = value
+      when 'api_key'          then config.api_key = value
+      when 'last_export_page' then config.last_export_page = value.to_i
+      when 'library_path'     then config.library_path = value
+      when 'shared_secret'    then config.shared_secret = value
+      when 'user_nsid'        then config.user_nsid = value
+      when 'username'         then config.username = value
       end
     end
 

@@ -116,6 +116,19 @@ RSpec.describe Flickarr::Config do
       expect(config.api_key).to be_nil
       expect(config.username).to be_nil
     end
+
+    it 'loads last_export_page from file' do
+      dir = File.join(Dir.tmpdir, "flickarr-test-#{Process.pid}")
+      path = File.join(dir, 'config.yml')
+      FileUtils.mkdir_p(dir)
+      File.write(path, YAML.dump('last_export_page' => 42))
+
+      config = described_class.load(path)
+
+      expect(config.last_export_page).to eq(42)
+    ensure
+      FileUtils.rm_rf(dir)
+    end
   end
 
   describe '#archive_path' do
