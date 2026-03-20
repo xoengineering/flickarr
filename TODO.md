@@ -5,7 +5,7 @@
 - [x] Rename `_profile/` to `profile/`
 
 ## Features
-- [ ] Export sets/collections as folders of reference files
+- [x] Export sets/collections as folders of reference files
 - [x] Graceful Ctrl+C handling (save progress, resume later)
 - [x] Resume state: save last photo ID/page after export:photos, start from there next run
 - [ ] `flickarr status` command (show progress, photo count, etc.)
