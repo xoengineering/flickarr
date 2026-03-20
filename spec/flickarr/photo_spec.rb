@@ -275,11 +275,52 @@ width: 1024)
         expect(photo.original_url).to eq('https://live.staticflickr.com/b.jpg')
       end
     end
+
+    context 'when media is video' do
+      let(:sizes_response) do
+        [
+          double('size', height: 75, label: 'Square', source: 'https://live.staticflickr.com/s.jpg',
+                         media: 'photo', width: 75),
+          double('size', height: 1200, label: 'Original', source: 'https://live.staticflickr.com/o.jpg',
+                         media: 'photo', width: 1600),
+          double('size', height: 0, label: 'Video Original',
+                         source: 'https://www.flickr.com/photos/user/123/play/orig/abc/', media: 'video', width: 0)
+        ]
+      end
+
+      it 'returns the Video Original URL' do
+        expect(photo.original_url).to eq('https://www.flickr.com/photos/user/123/play/orig/abc/')
+      end
+    end
   end
 
   describe '#extension' do
-    it 'returns the original format' do
+    it 'returns the original format for photos' do
       expect(photo.extension).to eq('jpg')
+    end
+
+    context 'when media is video' do
+      let(:info_response) do
+        double(
+          'info',
+          dates:          dates,
+          description:    'A video',
+          id:             '3839885270',
+          license:        '0',
+          media:          'video',
+          originalformat: 'jpg',
+          owner:          owner,
+          tags:           tags,
+          title:          'My Video',
+          urls:           urls,
+          views:          '0',
+          visibility:     visibility
+        )
+      end
+
+      it 'returns mp4 regardless of originalformat' do
+        expect(photo.extension).to eq('mp4')
+      end
     end
   end
 

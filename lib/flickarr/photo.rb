@@ -31,7 +31,7 @@ module Flickarr
     def initialize info:, sizes:, exif: nil
       @id          = info.id
       @description = info.description.to_s
-      @extension   = info.originalformat.to_s
+      @extension   = info.media.to_s == 'video' ? 'mp4' : info.originalformat.to_s
       @license     = License.new(info.license)
       @media       = info.media.to_s
       @tags        = extract_tags info
@@ -73,8 +73,9 @@ module Flickarr
     end
 
     def original_url
-      original = @sizes.find { it.label == 'Original' }
-      size     = original || @sizes.last
+      video_original = @sizes.find { it.label == 'Video Original' }
+      photo_original = @sizes.find { it.label == 'Original' }
+      size           = video_original || photo_original || @sizes.last
 
       size.source
     end
