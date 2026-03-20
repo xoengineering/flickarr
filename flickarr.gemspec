@@ -34,5 +34,6 @@ Gem::Specification.new do |spec|
   spec.require_paths = ['lib']
 
   spec.add_dependency 'down', '~> 5.4'
+  spec.add_dependency 'flickr', '~> 2.1'
   spec.add_dependency 'http', '~> 5.2'
 end

@@ -9,6 +9,7 @@ PATH
   specs:
     flickarr (0.1.0)
       down (~> 5.4)
+      flickr (~> 2.1)
       http (~> 5.2)
 
 GEM
