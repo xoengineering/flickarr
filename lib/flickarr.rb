@@ -1,6 +1,5 @@
 require_relative 'flickarr/version'
+require_relative 'flickarr/errors'
 
 module Flickarr
-  class Error < StandardError; end
-  # Your code goes here...
 end
