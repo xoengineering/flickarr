@@ -103,9 +103,12 @@ module Flickarr
       count      = (start_page - 1) * per_page
       run_count  = 0
 
+      interrupted = false
+      trap('INT') { interrupted = true }
+
       puts "Starting from page #{page}..." if page > 1
 
-      catch(:limit_reached) do
+      catch(:stop_export) do
         loop do
           response    = client.photos(user_id: config.user_nsid, page: page)
           total       = response.total.to_i
@@ -114,6 +117,8 @@ module Flickarr
           puts "Page #{page}/#{total_pages}"
 
           response.each do |list_photo|
+            throw(:stop_export) if interrupted
+
             count     += 1
             run_count += 1
 
@@ -123,7 +128,7 @@ module Flickarr
               export_single_photo(client: client, photo_id: list_photo.id, archive: archive, count: count, total: total)
             end
 
-            throw(:limit_reached) if @limit && run_count >= @limit
+            throw(:stop_export) if @limit && run_count >= @limit
           end
 
           config.last_export_page = page
@@ -135,7 +140,11 @@ module Flickarr
         end
       end
 
-      puts "Reached limit of #{@limit} photos." if @limit && run_count >= @limit
+      config.last_export_page = page - 1 if interrupted
+      config.save @config_path if interrupted
+
+      puts "\nInterrupted. Saved progress at page #{page}." if interrupted
+      puts "Reached limit of #{@limit} photos." if !interrupted && @limit && run_count >= @limit
       puts "Done. #{run_count} photos processed this run."
     end
 
