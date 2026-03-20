@@ -19,6 +19,12 @@ module Flickarr
       @flickr.access_secret = config.access_secret
     end
 
+    def collections user_id:
+      @rate_limiter.track do
+        flickr.collections.getTree(user_id: user_id)
+      end
+    end
+
     def photo id:
       PhotoQuery.new(flickr: flickr, id: id, rate_limiter: @rate_limiter)
     end
@@ -54,6 +60,30 @@ module Flickarr
     def photos user_id:, page: 1, per_page: 100
       @rate_limiter.track do
         flickr.people.getPhotos(user_id: user_id, page: page, per_page: per_page, extras: PHOTO_EXTRAS)
+      end
+    end
+
+    SET_PHOTO_EXTRAS = %w[
+      date_taken
+      date_upload
+      description
+      media
+      original_format
+      tags
+      url_o
+    ].join(',').freeze
+
+    def set_photos photoset_id:, user_id:, page: 1, per_page: 500
+      @rate_limiter.track do
+        flickr.photosets.getPhotos(
+          photoset_id: photoset_id, user_id: user_id, page: page, per_page: per_page, extras: SET_PHOTO_EXTRAS
+        )
+      end
+    end
+
+    def sets user_id:
+      @rate_limiter.track do
+        flickr.photosets.getList(user_id: user_id, per_page: 500)
       end
     end
 
