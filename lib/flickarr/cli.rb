@@ -28,6 +28,7 @@ module Flickarr
       when 'export:profile'     then run_export_profile
       when 'export:sets'        then run_export_sets
       when 'init'               then run_init
+      when 'status'             then run_status
       else                           print_usage
       end
     end
@@ -124,6 +125,68 @@ module Flickarr
       config.library_path = File.expand_path(library_path) if library_path
       config.save @config_path
       puts "Initialized Flickarr config at #{@config_path}"
+    end
+
+    def run_status
+      config  = Config.load(@config_path)
+      archive = config.archive_path
+
+      unless archive && Dir.exist?(archive)
+        puts 'No archive found. Run `flickarr init` and `flickarr auth` first.'
+        return
+      end
+
+      profile_exists   = File.exist?(File.join(archive, 'Profile', 'profile.json'))
+      photo_count      = count_media_files(archive, %w[jpg jpeg png gif tiff])
+      video_count      = count_media_files(archive, %w[mp4])
+      set_count        = count_subdirs(File.join(archive, 'Sets'))
+      collection_count = count_subdirs(File.join(archive, 'Collections'))
+      disk_usage       = human_size(dir_size(archive))
+
+      rows = [
+        ['Archive',     archive],
+        ['Profile',     profile_exists ? 'downloaded' : 'not downloaded'],
+        ['Photos',      photo_count],
+        ['Videos',      video_count],
+        ['Sets',        set_count],
+        ['Collections', collection_count],
+        ['Disk usage',  disk_usage]
+      ]
+
+      max_width = rows.map { it.first.length }.max + 1
+      rows.each do |label, value|
+        puts "#{"#{label}:".ljust(max_width)}  #{value}"
+      end
+    end
+
+    def count_media_files archive, extensions
+      pattern = File.join(archive, '**', "*.{#{extensions.join(',')}}")
+      Dir.glob(pattern).count do |path|
+        !path.include?('/Profile/') && !path.include?('/Sets/') && !path.include?('/Collections/')
+      end
+    end
+
+    def count_subdirs path
+      return 0 unless Dir.exist?(path)
+
+      Dir.children(path).count { File.directory?(File.join(path, it)) }
+    end
+
+    def dir_size path
+      Dir.glob(File.join(path, '**', '*')).select { File.file?(it) }.sum { File.size(it) }
+    end
+
+    def human_size bytes
+      units = %w[B KB MB GB TB]
+      unit  = 0
+
+      size = bytes.to_f
+      while size >= 1024 && unit < units.length - 1
+        size /= 1024
+        unit += 1
+      end
+
+      format('%<size>.1f %<unit>s', size: size, unit: units[unit])
     end
 
     def run_export_photo
