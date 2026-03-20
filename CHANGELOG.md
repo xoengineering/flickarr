@@ -24,7 +24,13 @@
 - Add video post support with poster frame download
 - Fast skip: check file existence from list data before making per-photo API calls
 - Graceful Ctrl+C handling: saves progress and exits cleanly
-- Graceful error handling for invalid photo IDs
+- Add `flickarr errors` command to print errors.log path
+- Add `flickarr open` command to open archive in Finder
+- Add `flickarr path` command for scripting
+- Fallback to smaller video sizes when original is unavailable on CDN
+- Failed exports logged to errors.log with post URL and timestamp
+- Graceful error handling for invalid photo IDs and download failures
+- `--limit` now counts actual downloads, not skips
 
 ## [0.1.0] - 2026-03-19
 
