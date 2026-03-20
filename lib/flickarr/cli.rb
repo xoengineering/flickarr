@@ -27,9 +27,8 @@ module Flickarr
       end
 
       config = Config.load(@config_path)
-      Config::ATTRIBUTES.each do |attr|
-        value = config.public_send(attr)
-        puts "#{attr}: #{value || '(not set)'}"
+      config.to_h.each do |key, value|
+        puts "#{key}: #{value || '(not set)'}"
       end
     end
 

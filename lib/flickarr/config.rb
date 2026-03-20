@@ -3,9 +3,7 @@ require 'yaml'
 
 module Flickarr
   class Config
-    ATTRIBUTES = %i[api_key shared_secret access_token access_secret user_nsid username].freeze
-
-    attr_accessor(*ATTRIBUTES)
+    attr_accessor :api_key, :shared_secret, :access_token, :access_secret, :user_nsid, :username
 
     def initialize
       @api_key = ENV.fetch('FLICKARR_API_KEY', nil)
@@ -22,7 +20,14 @@ module Flickarr
     end
 
     def to_h
-      ATTRIBUTES.to_h { |attr| [attr.to_s, public_send(attr)] }
+      {
+        'api_key'       => api_key,
+        'shared_secret' => shared_secret,
+        'access_token'  => access_token,
+        'access_secret' => access_secret,
+        'user_nsid'     => user_nsid,
+        'username'      => username
+      }
     end
 
     def self.load path
@@ -32,10 +37,12 @@ module Flickarr
       yaml = YAML.load_file(path)
       return config unless yaml.is_a?(Hash)
 
-      ATTRIBUTES.each do |attr|
-        value = yaml[attr.to_s]
-        config.public_send(:"#{attr}=", value) if value
-      end
+      config.api_key       = yaml['api_key']       if yaml['api_key']
+      config.shared_secret = yaml['shared_secret'] if yaml['shared_secret']
+      config.access_token  = yaml['access_token']  if yaml['access_token']
+      config.access_secret = yaml['access_secret'] if yaml['access_secret']
+      config.user_nsid     = yaml['user_nsid']     if yaml['user_nsid']
+      config.username      = yaml['username']      if yaml['username']
 
       config
     end
