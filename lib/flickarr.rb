@@ -6,10 +6,12 @@ require_relative 'flickarr/client'
 require_relative 'flickarr/cli'
 require_relative 'flickarr/collection'
 require_relative 'flickarr/license'
+require_relative 'flickarr/post'
 require_relative 'flickarr/photo'
 require_relative 'flickarr/photo_set'
-require_relative 'flickarr/rate_limiter'
 require_relative 'flickarr/profile'
+require_relative 'flickarr/rate_limiter'
+require_relative 'flickarr/video'
 
 module Flickarr
 end

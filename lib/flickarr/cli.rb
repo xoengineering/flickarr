@@ -22,11 +22,13 @@ module Flickarr
       when 'auth'               then run_auth
       when 'config'             then run_config
       when 'config:set'         then run_config_set
-      when 'export:collections' then run_export_collections
-      when 'export:photo'       then run_export_photo
-      when 'export:photos'      then run_export_photos
-      when 'export:profile'     then run_export_profile
-      when 'export:sets'        then run_export_sets
+      when 'export', 'export:posts' then run_export_posts
+      when 'export:collections'     then run_export_collections
+      when 'export:photo'           then run_export_post
+      when 'export:photos'          then run_export_posts(media: 'photos')
+      when 'export:profile'         then run_export_profile
+      when 'export:sets'            then run_export_sets
+      when 'export:videos'          then run_export_posts(media: 'videos')
       when 'init'               then run_init
       when 'open'               then run_open
       when 'path'               then run_path
@@ -240,12 +242,12 @@ module Flickarr
       format('%<size>.1f %<unit>s', size: size, unit: units[unit])
     end
 
-    def run_export_photo
-      url = @args.shift
-      photo_id = Photo.id_from_url(url.to_s)
+    def run_export_post
+      url     = @args.shift
+      post_id = Post.id_from_url(url.to_s)
 
-      unless photo_id
-        warn 'Error: Could not extract photo ID from URL.'
+      unless post_id
+        warn 'Error: Could not extract post ID from URL.'
         return
       end
 
@@ -256,28 +258,28 @@ module Flickarr
         return
       end
 
-      client  = Client.new(config)
-      query   = client.photo(id: photo_id)
+      client = Client.new(config)
+      query  = client.photo(id: post_id)
 
       begin
-        photo = Photo.new(info: query.info, sizes: query.sizes.size, exif: query.exif)
+        post = Post.build(info: query.info, sizes: query.sizes.size, exif: query.exif)
       rescue Flickr::FailedResponse => e
         warn "Error: #{e.message}"
         return
       end
 
       archive = config.archive_path
-      status  = photo.write(archive_path: archive, overwrite: @overwrite)
-      path    = File.join archive, photo.folder_path
+      status  = post.write(archive_path: archive, overwrite: @overwrite)
+      path    = File.join archive, post.folder_path
 
       case status
-      when :created     then puts "Downloaded photo #{photo_id} to #{path}"
-      when :overwritten then puts "Re-downloaded photo #{photo_id} to #{path}"
-      when :skipped     then puts "Skipped photo #{photo_id} (already exists at #{path})"
+      when :created     then puts "Downloaded #{post.media} #{post_id} to #{path}"
+      when :overwritten then puts "Re-downloaded #{post.media} #{post_id} to #{path}"
+      when :skipped     then puts "Skipped #{post.media} #{post_id} (already exists at #{path})"
       end
     end
 
-    def run_export_photos
+    def run_export_posts media: 'all'
       config = Config.load(@config_path)
 
       unless config.access_token && config.access_secret && config.user_nsid
@@ -288,7 +290,7 @@ module Flickarr
       client     = Client.new(config)
       archive    = config.archive_path
       last_page  = config.last_export_page
-      start_page = last_page ? last_page + 1 : 1
+      start_page = media == 'all' && last_page ? last_page + 1 : 1
       per_page   = 100
       page       = start_page
       count      = (start_page - 1) * per_page
@@ -301,29 +303,31 @@ module Flickarr
 
       catch(:stop_export) do
         loop do
-          response    = client.photos(user_id: config.user_nsid, page: page)
+          response    = fetch_posts_page(client: client, config: config, media: media, page: page)
           total       = response.total.to_i
           total_pages = response.pages.to_i
 
           puts "Page #{page}/#{total_pages}"
 
-          response.each do |list_photo|
+          response.each do |list_post|
             throw(:stop_export) if interrupted
 
             count     += 1
             run_count += 1
 
-            if !@overwrite && File.exist?(Photo.file_path_from_list_item(list_photo, archive_path: archive))
-              puts "Skipped photo #{list_photo.id} (#{count}/#{total})"
+            if !@overwrite && File.exist?(Post.file_path_from_list_item(list_post, archive_path: archive))
+              puts "Skipped #{list_post.media} #{list_post.id} (#{count}/#{total})"
             else
-              export_single_photo(client: client, photo_id: list_photo.id, archive: archive, count: count, total: total)
+              export_single_post(client: client, post_id: list_post.id, archive: archive, count: count, total: total)
             end
 
             throw(:stop_export) if @limit && run_count >= @limit
           end
 
-          config.last_export_page = page
-          config.save @config_path
+          if media == 'all'
+            config.last_export_page = page
+            config.save @config_path
+          end
 
           break if page >= total_pages
 
@@ -331,31 +335,43 @@ module Flickarr
         end
       end
 
-      config.last_export_page = page - 1 if interrupted
-      config.save @config_path if interrupted
+      if interrupted && media == 'all'
+        config.last_export_page = page - 1
+        config.save @config_path
+      end
 
       puts "\nInterrupted. Saved progress at page #{page}." if interrupted
-      puts "Reached limit of #{@limit} photos." if !interrupted && @limit && run_count >= @limit
-      puts "Done. #{run_count} photos processed this run."
+      puts "Reached limit of #{@limit} posts." if !interrupted && @limit && run_count >= @limit
+      puts "Done. #{run_count} posts processed this run."
     end
 
-    def export_single_photo client:, photo_id:, archive:, count:, total:
-      query = client.photo(id: photo_id)
+    def fetch_posts_page client:, config:, media:, page:
+      case media
+      when 'photos' then client.flickr.photos.search(user_id: config.user_nsid, media: 'photos', page: page,
+                                                     per_page: 100, extras: Client::PHOTO_EXTRAS)
+      when 'videos' then client.flickr.photos.search(user_id: config.user_nsid, media: 'videos', page: page,
+                                                     per_page: 100, extras: Client::PHOTO_EXTRAS)
+      else               client.photos(user_id: config.user_nsid, page: page)
+      end
+    end
+
+    def export_single_post client:, post_id:, archive:, count:, total:
+      query = client.photo(id: post_id)
 
       begin
-        photo = Photo.new(info: query.info, sizes: query.sizes.size, exif: query.exif)
+        post = Post.build(info: query.info, sizes: query.sizes.size, exif: query.exif)
       rescue Flickr::FailedResponse => e
-        warn "Error on photo #{photo_id}: #{e.message}"
+        warn "Error on post #{post_id}: #{e.message}"
         return
       end
 
-      status = photo.write(archive_path: archive, overwrite: @overwrite)
-      path   = File.join archive, photo.folder_path
+      status = post.write(archive_path: archive, overwrite: @overwrite)
+      path   = File.join archive, post.folder_path
 
       case status
-      when :created     then puts "Downloaded photo #{photo_id} to #{path} (#{count}/#{total})"
-      when :overwritten then puts "Re-downloaded photo #{photo_id} to #{path} (#{count}/#{total})"
-      when :skipped     then puts "Skipped photo #{photo_id} (#{count}/#{total})"
+      when :created     then puts "Downloaded #{post.media} #{post_id} to #{path} (#{count}/#{total})"
+      when :overwritten then puts "Re-downloaded #{post.media} #{post_id} to #{path} (#{count}/#{total})"
+      when :skipped     then puts "Skipped #{post.media} #{post_id} (#{count}/#{total})"
       end
     end
 
@@ -476,11 +492,13 @@ module Flickarr
           config              Show current configuration
           config <key>        Show a single config value
           config:set          Set configuration values (key=value)
-          export:collections  Export all collections (groups of sets)
-          export:photo <url>  Export a single photo by Flickr URL
-          export:photos       Export all photos from your timeline
-          export:profile      Export Flickr profile to archive
-          export:sets         Export all photosets with photo references
+          export, export:posts  Export all posts (photos + videos)
+          export:collections    Export all collections (groups of sets)
+          export:photo <url>    Export a single post by Flickr URL
+          export:photos         Export only photos
+          export:profile        Export Flickr profile to archive
+          export:sets           Export all photosets with photo references
+          export:videos         Export only videos
           init                Create config directory and stub config file
           open                Open archive folder in Finder
           path                Print archive path (for scripting)

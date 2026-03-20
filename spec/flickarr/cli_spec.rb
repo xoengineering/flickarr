@@ -186,19 +186,15 @@ RSpec.describe Flickarr::CLI do
       allow(flickr_instance).to receive(:access_token=)
       allow(flickr_instance).to receive(:access_secret=)
 
-      # Stub the paginated list response
-      people_api = double('people')
+      photos_api = double('photos')
+      allow(flickr_instance).to receive(:photos).and_return(photos_api)
 
       list_photo = double('list_photo', id: '111', title: 'Test Photo', media: 'photo',
-                                       originalformat: 'jpg', datetaken: '2024-03-15 14:30:00',
-                                       datetakenunknown: '0', dateupload: '1710500000')
-      list_response = double('list_response', to_a: [list_photo], pages: 1, total: 1)
+                                        originalformat: 'jpg', datetaken: '2024-03-15 14:30:00',
+                                        datetakenunknown: '0', dateupload: '1710500000')
+      list_response = double('list_response', pages: 1, total: 1)
       allow(list_response).to receive(:each).and_yield(list_photo)
-      allow(people_api).to receive(:getPhotos).and_return(list_response)
-
-      # Stub the per-photo API calls
-      photos_api = double('photos')
-      allow(flickr_instance).to receive_messages(people: people_api, photos: photos_api)
+      allow(photos_api).to receive(:search).and_return(list_response)
 
       dates = double('dates', taken: '2024-03-15 14:30:00', posted: '1710500000', takenunknown: 0, lastupdate: '1710600000')
       owner = double('owner', nsid: '123@N00', realname: 'Test User', username: 'testuser')
@@ -207,27 +203,16 @@ RSpec.describe Flickarr::CLI do
 
       info = double(
         'info',
-        dates:          dates,
-        description:    'A photo',
-        id:             '111',
-        license:        '0',
-        media:          'photo',
-        originalformat: 'jpg',
-        owner:          owner,
-        tags:           double('tags', tag: []),
-        title:          'Test Photo',
-        urls:           double('urls', url: [photo_url]),
-        views:          '5',
-        visibility:     vis
+        dates: dates, description: 'A photo', id: '111', license: '0', media: 'photo',
+        originalformat: 'jpg', owner: owner, tags: double('tags', tag: []),
+        title: 'Test Photo', urls: double('urls', url: [photo_url]), views: '5', visibility: vis
       )
       original = double('size', height: 1200, label: 'Original',
                                 source: 'https://live.staticflickr.com/o.jpg', media: 'photo', width: 1600)
       sizes = double('sizes', size: [original])
       exif = double('exif', camera: 'Canon', exif: [])
 
-      allow(photos_api).to receive(:getInfo).with(photo_id: '111').and_return(info)
-      allow(photos_api).to receive(:getSizes).with(photo_id: '111').and_return(sizes)
-      allow(photos_api).to receive(:getExif).with(photo_id: '111').and_return(exif)
+      allow(photos_api).to receive_messages(getInfo: info, getSizes: sizes, getExif: exif)
       allow(Down).to receive(:download)
 
       cli = described_class.new(['export:photos'], config_path: config_path)
@@ -261,19 +246,18 @@ RSpec.describe Flickarr::CLI do
       allow(flickr_instance).to receive(:access_token=)
       allow(flickr_instance).to receive(:access_secret=)
 
-      people_api = double('people')
       photos_api = double('photos')
-      allow(flickr_instance).to receive_messages(people: people_api, photos: photos_api)
+      allow(flickr_instance).to receive(:photos).and_return(photos_api)
 
       first_photo = double('first_photo', id: '111', title: 'Photo', media: 'photo',
-                                        originalformat: 'jpg', datetaken: '2024-03-15 14:30:00',
-                                        datetakenunknown: '0', dateupload: '1710500000')
+                                          originalformat: 'jpg', datetaken: '2024-03-15 14:30:00',
+                                          datetakenunknown: '0', dateupload: '1710500000')
       second_photo = double('second_photo', id: '222', title: 'Photo', media: 'photo',
-                                         originalformat: 'jpg', datetaken: '2024-03-15 14:30:00',
-                                         datetakenunknown: '0', dateupload: '1710500000')
+                                            originalformat: 'jpg', datetaken: '2024-03-15 14:30:00',
+                                            datetakenunknown: '0', dateupload: '1710500000')
       list_response = double('list_response', pages: 1, total: 2)
       allow(list_response).to receive(:each).and_yield(first_photo).and_yield(second_photo)
-      allow(people_api).to receive(:getPhotos).and_return(list_response)
+      allow(photos_api).to receive(:search).and_return(list_response)
 
       dates = double('dates', taken: '2024-03-15 14:30:00', posted: '1710500000', takenunknown: 0, lastupdate: '1710600000')
       owner = double('owner', nsid: '123@N00', realname: 'Test', username: 'testuser')
@@ -295,7 +279,7 @@ RSpec.describe Flickarr::CLI do
       allow(Down).to receive(:download)
 
       cli = described_class.new(['export:photos', '--limit', '1'], config_path: config_path)
-      expect { cli.run }.to output(/Reached limit of 1/).to_stdout
+      expect { cli.run }.to output(/Reached limit of 1 posts/).to_stdout
     ensure
       FileUtils.rm_rf(dir)
     end
@@ -491,7 +475,7 @@ RSpec.describe Flickarr::CLI do
       config.save(config_path)
 
       cli = described_class.new(['export:photo', 'https://example.com/bad'], config_path: config_path)
-      expect { cli.run }.to output(/Could not extract photo ID/).to_stderr
+      expect { cli.run }.to output(/Could not extract post ID/).to_stderr
     ensure
       FileUtils.rm_rf(dir)
     end
