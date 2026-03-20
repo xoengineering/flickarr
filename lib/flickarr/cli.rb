@@ -64,7 +64,7 @@ module Flickarr
         return
       end
 
-      puts File.join(archive, 'errors.log')
+      puts File.join(archive, '_errors.log')
     end
 
     def run_export_collections
@@ -417,7 +417,7 @@ module Flickarr
     end
 
     def log_error archive:, post_id:, username:, error:
-      log_path = File.join archive, 'errors.log'
+      log_path = File.join archive, '_errors.log'
       FileUtils.mkdir_p File.dirname(log_path)
 
       File.open(log_path, 'a') do |f|
@@ -550,7 +550,7 @@ module Flickarr
           config              Show current configuration
           config <key>        Show a single config value
           config:set          Set configuration values (key=value)
-          errors                Print path to errors.log
+          errors                Print path to _errors.log
           export [url]          Export all posts, or a single post by URL
           export:collections    Export all collections (groups of sets)
           export:photo <url>    Export a single post by URL
