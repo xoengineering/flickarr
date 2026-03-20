@@ -63,11 +63,17 @@ module Flickarr
 
       client  = Client.new(config)
       query   = client.photo(id: photo_id)
-      photo   = Photo.new(info: query.info, sizes: query.sizes.size, exif: query.exif)
-      archive = config.archive_path
 
-      status = photo.write(archive_path: archive, overwrite: @overwrite)
-      path   = File.join archive, photo.folder_path
+      begin
+        photo = Photo.new(info: query.info, sizes: query.sizes.size, exif: query.exif)
+      rescue Flickr::FailedResponse => e
+        warn "Error: #{e.message}"
+        return
+      end
+
+      archive = config.archive_path
+      status  = photo.write(archive_path: archive, overwrite: @overwrite)
+      path    = File.join archive, photo.folder_path
 
       case status
       when :created     then puts "Downloaded photo #{photo_id} to #{path}"

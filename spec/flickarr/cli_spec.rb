@@ -248,6 +248,38 @@ RSpec.describe Flickarr::CLI do
     ensure
       FileUtils.rm_rf(dir)
     end
+
+    it 'reports error when Flickr API rejects the photo ID' do
+      dir = File.join(Dir.tmpdir, "flickarr-cli-test-#{Process.pid}")
+      config_path = File.join(dir, 'config.yml')
+      FileUtils.mkdir_p(dir)
+
+      config = Flickarr::Config.new
+      config.api_key = 'test-key'
+      config.shared_secret = 'test-secret'
+      config.access_token = 'token'
+      config.access_secret = 'secret'
+      config.user_nsid = '123@N00'
+      config.username = 'testuser'
+      config.library_path = File.join(dir, 'library')
+      config.save(config_path)
+
+      flickr_instance = double('Flickr')
+      allow(Flickr).to receive(:new).and_return(flickr_instance)
+      allow(flickr_instance).to receive(:access_token=)
+      allow(flickr_instance).to receive(:access_secret=)
+
+      photos_api = double('photos')
+      allow(flickr_instance).to receive(:photos).and_return(photos_api)
+      allow(photos_api).to receive(:getInfo)
+        .and_raise(Flickr::FailedResponse.new('Photo not found (invalid ID)', '1', 'flickr.photos.getInfo'))
+
+      url = 'https://www.flickr.com/photos/testuser/9999999999'
+      cli = described_class.new(['export:photo', url], config_path: config_path)
+      expect { cli.run }.to output(/Photo not found/).to_stderr
+    ensure
+      FileUtils.rm_rf(dir)
+    end
   end
 
   describe 'export:profile command' do
