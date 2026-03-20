@@ -24,9 +24,9 @@ module Flickarr
       when 'config'             then run_config
       when 'config:set'         then run_config_set
       when 'errors' then run_errors
-      when 'export', 'export:posts' then run_export_posts
+      when 'export', 'export:posts' then run_export_or_post
       when 'export:collections'     then run_export_collections
-      when 'export:photo'           then run_export_post
+      when 'export:photo', 'export:video' then run_export_post
       when 'export:photos'          then run_export_posts(media: 'photos')
       when 'export:profile'         then run_export_profile
       when 'export:sets'            then run_export_sets
@@ -254,6 +254,14 @@ module Flickarr
       end
 
       format('%<size>.1f %<unit>s', size: size, unit: units[unit])
+    end
+
+    def run_export_or_post
+      if @args.first && Post.id_from_url(@args.first)
+        run_export_post
+      else
+        run_export_posts
+      end
     end
 
     def run_export_post
@@ -543,10 +551,12 @@ module Flickarr
           config <key>        Show a single config value
           config:set          Set configuration values (key=value)
           errors                Print path to errors.log
-          export, export:posts  Export all posts (photos + videos)
+          export [url]          Export all posts, or a single post by URL
           export:collections    Export all collections (groups of sets)
-          export:photo <url>    Export a single post by Flickr URL
+          export:photo <url>    Export a single post by URL
+          export:video <url>    Export a single post by URL
           export:photos         Export only photos
+          export:posts          Export all posts (photos + videos)
           export:profile        Export Flickr profile to archive
           export:sets           Export all photosets with photo references
           export:videos         Export only videos
