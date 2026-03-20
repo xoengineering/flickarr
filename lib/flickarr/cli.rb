@@ -1,7 +1,7 @@
 module Flickarr
   class CLI
     DEFAULT_CONFIG_PATH = File.join(Dir.home, '.flickarr', 'config.yml').freeze
-    VALID_CONFIG_KEYS = %i[api_key shared_secret access_token access_secret user_nsid username].freeze
+    VALID_CONFIG_KEYS = %i[access_secret access_token api_key shared_secret user_nsid username].freeze
 
     def initialize args, config_path: DEFAULT_CONFIG_PATH
       @args = args
@@ -75,10 +75,10 @@ module Flickarr
 
     def set_config_attr config, key, value
       case key
+      when 'access_secret' then config.access_secret = value
+      when 'access_token'  then config.access_token = value
       when 'api_key'       then config.api_key = value
       when 'shared_secret' then config.shared_secret = value
-      when 'access_token'  then config.access_token = value
-      when 'access_secret' then config.access_secret = value
       when 'user_nsid'     then config.user_nsid = value
       when 'username'      then config.username = value
       end
