@@ -318,7 +318,7 @@ module Flickarr
             if !@overwrite && File.exist?(Post.file_path_from_list_item(list_post, archive_path: archive))
               puts "Skipped #{list_post.media} #{list_post.id} (#{count}/#{total})"
             else
-              export_single_post(client: client, post_id: list_post.id, archive: archive, count: count, total: total)
+              export_single_post(client: client, config: config, post_id: list_post.id, count: count, total: total)
             end
 
             throw(:stop_export) if @limit && run_count >= @limit
@@ -355,19 +355,20 @@ module Flickarr
       end
     end
 
-    def export_single_post client:, post_id:, archive:, count:, total:
-      query = client.photo(id: post_id)
+    def export_single_post client:, config:, post_id:, count:, total:
+      query   = client.photo(id: post_id)
+      archive = config.archive_path
 
       begin
         post   = Post.build(info: query.info, sizes: query.sizes.size, exif: query.exif)
         status = post.write(archive_path: archive, overwrite: @overwrite)
       rescue Flickr::FailedResponse => e
         warn "Error on post #{post_id}: #{e.message}"
-        log_error archive: archive, post_id: post_id, error: e
+        log_error archive: archive, post_id: post_id, username: config.username, error: e
         return
       rescue Down::Error => e
         warn "Download error on post #{post_id}: #{e.message}"
-        log_error archive: archive, post_id: post_id, error: e
+        log_error archive: archive, post_id: post_id, username: config.username, error: e
         return
       end
 
@@ -380,7 +381,7 @@ module Flickarr
       end
     end
 
-    def log_error archive:, post_id:, error:
+    def log_error archive:, post_id:, username:, error:
       log_path = File.join archive, 'errors.log'
       FileUtils.mkdir_p File.dirname(log_path)
 
@@ -388,7 +389,7 @@ module Flickarr
         f.puts '---'
         f.puts "Time:      #{Time.now.utc.iso8601}"
         f.puts "Post ID:   #{post_id}"
-        f.puts "Flickr:    https://www.flickr.com/photo.gne?id=#{post_id}"
+        f.puts "URL:       https://www.flickr.com/photos/#{username}/#{post_id}/"
         f.puts "Error:     #{error.class}"
         f.puts "Message:   #{error.message}"
         f.puts
