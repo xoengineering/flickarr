@@ -1,3 +1,4 @@
+# rubocop:disable RSpec/VerifiedDoubles
 require 'tmpdir'
 
 RSpec.describe Flickarr::CLI do
@@ -120,4 +121,48 @@ RSpec.describe Flickarr::CLI do
       expect { cli.run }.to output(/Usage:.*config:set/).to_stdout
     end
   end
+
+  describe 'auth command' do
+    it 'runs the OAuth flow' do
+      dir = File.join(Dir.tmpdir, "flickarr-cli-test-#{Process.pid}")
+      config_path = File.join(dir, 'config.yml')
+      FileUtils.mkdir_p(dir)
+
+      config = Flickarr::Config.new
+      config.api_key = 'test-key'
+      config.shared_secret = 'test-secret'
+      config.save(config_path)
+
+      flickr_instance = double(
+        'Flickr',
+        access_token:    nil,
+        :access_token= => nil,
+        access_secret:   nil,
+        :access_secret= => nil
+      )
+      allow(Flickr).to receive(:new).and_return(flickr_instance)
+
+      request_token = { 'oauth_token' => 'req-token', 'oauth_token_secret' => 'req-secret' }
+      login = double('login', nsid: '123@N00', username: 'testuser')
+      test_namespace = double('test', login: login)
+      allow(flickr_instance).to receive_messages(get_request_token: request_token, test: test_namespace)
+      allow(flickr_instance).to receive(:get_access_token)
+      allow(flickr_instance).to receive_messages(get_authorize_url: 'https://flickr.com/auth', access_token: 'access-token',
+                                                 access_secret: 'access-secret')
+
+      cli = described_class.new(['auth'], config_path: config_path)
+      allow_any_instance_of(Flickarr::Auth).to receive(:prompt_for_verifier).and_return('12345') # rubocop:disable RSpec/AnyInstance
+
+      expect { cli.run }.to output(/Authenticated as testuser/).to_stdout
+    ensure
+      FileUtils.rm_rf(dir)
+    end
+
+    it 'reports error when config is missing api credentials' do
+      cli = described_class.new(['auth'], config_path: '/tmp/nonexistent-flickarr.yml')
+
+      expect { cli.run }.to output(/api_key/).to_stderr
+    end
+  end
 end
+# rubocop:enable RSpec/VerifiedDoubles

@@ -12,6 +12,8 @@ module Flickarr
       command = @args.shift
 
       case command
+      when 'auth'
+        run_auth
       when 'config'
         run_config
       when 'config:set'
@@ -22,6 +24,14 @@ module Flickarr
     end
 
     private
+
+    def run_auth
+      config = Config.load(@config_path)
+      auth = Auth.new(config, config_path: @config_path)
+      auth.authenticate
+    rescue ConfigError => e
+      warn "Error: #{e.message}"
+    end
 
     def run_config
       key = @args.shift
@@ -99,6 +109,7 @@ module Flickarr
         Usage: flickarr <command> [options]
 
         Commands:
+          auth                Authenticate with Flickr
           config              Show current configuration
           config <key>        Show a single config value
           config:set          Set configuration values (key=value)
