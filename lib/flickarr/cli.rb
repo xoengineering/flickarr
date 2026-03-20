@@ -21,12 +21,16 @@ module Flickarr
         run_config
       when 'config:set'
         run_config_set
+      when 'export:collections'
+        run_export_collections
       when 'export:photo'
         run_export_photo
       when 'export:photos'
         run_export_photos
       when 'export:profile'
         run_export_profile
+      when 'export:sets'
+        run_export_sets
       when 'init'
         run_init
       else
@@ -35,6 +39,67 @@ module Flickarr
     end
 
     private
+
+    def run_export_collections
+      config = Config.load(@config_path)
+
+      unless config.access_token && config.access_secret && config.user_nsid
+        warn 'Error: Not authenticated. Run `flickarr auth` first.'
+        return
+      end
+
+      client  = Client.new(config)
+      archive = config.archive_path
+      tree    = client.collections(user_id: config.user_nsid)
+      count   = 0
+
+      tree.each do |collection_data|
+        count += 1
+        collection = Collection.new(collection_data)
+        status     = collection.write(archive_path: archive, overwrite: @overwrite)
+
+        case status
+        when :created     then puts "Downloaded collection #{collection.title} (#{count})"
+        when :overwritten then puts "Re-downloaded collection #{collection.title} (#{count})"
+        when :skipped     then puts "Skipped collection #{collection.title} (#{count})"
+        end
+      end
+
+      puts "Done. #{count} collections processed."
+    end
+
+    def run_export_sets
+      config = Config.load(@config_path)
+
+      unless config.access_token && config.access_secret && config.user_nsid
+        warn 'Error: Not authenticated. Run `flickarr auth` first.'
+        return
+      end
+
+      client  = Client.new(config)
+      archive = config.archive_path
+      sets    = client.sets(user_id: config.user_nsid)
+      count   = 0
+      total   = sets.respond_to?(:total) ? sets.total.to_i : 0
+
+      sets.each do |set_data|
+        count += 1
+
+        photos_response = client.set_photos(photoset_id: set_data.id, user_id: config.user_nsid)
+        photo_items     = photos_response.respond_to?(:photo) ? photos_response.photo.to_a : []
+
+        photo_set = PhotoSet.new(set: set_data, photo_items: photo_items)
+        status    = photo_set.write(archive_path: archive, overwrite: @overwrite)
+
+        case status
+        when :created     then puts "Downloaded set #{photo_set.title} (#{count}/#{total})"
+        when :overwritten then puts "Re-downloaded set #{photo_set.title} (#{count}/#{total})"
+        when :skipped     then puts "Skipped set #{photo_set.title} (#{count}/#{total})"
+        end
+      end
+
+      puts "Done. #{count} sets processed."
+    end
 
     def run_init
       if File.exist?(@config_path)
@@ -281,9 +346,11 @@ module Flickarr
           config              Show current configuration
           config <key>        Show a single config value
           config:set          Set configuration values (key=value)
+          export:collections  Export all collections (groups of sets)
           export:photo <url>  Export a single photo by Flickr URL
           export:photos       Export all photos from your timeline
           export:profile      Export Flickr profile to archive
+          export:sets         Export all photosets with photo references
           init                Create config directory and stub config file
 
         Options:

@@ -301,6 +301,117 @@ RSpec.describe Flickarr::CLI do
     end
   end
 
+  describe 'export:collections command' do
+    it 'exports all collections' do
+      dir = File.join(Dir.tmpdir, "flickarr-cli-test-#{Process.pid}")
+      config_path = File.join(dir, 'config.yml')
+      archive_path = File.join(dir, 'library', 'testuser')
+      FileUtils.mkdir_p(dir)
+
+      config = Flickarr::Config.new
+      config.api_key = 'test-key'
+      config.shared_secret = 'test-secret'
+      config.access_token = 'token'
+      config.access_secret = 'secret'
+      config.user_nsid = '123@N00'
+      config.username = 'testuser'
+      config.library_path = File.join(dir, 'library')
+      config.save(config_path)
+
+      flickr_instance = double('Flickr')
+      allow(Flickr).to receive(:new).and_return(flickr_instance)
+      allow(flickr_instance).to receive(:access_token=)
+      allow(flickr_instance).to receive(:access_secret=)
+
+      collections_api = double('collections')
+      allow(flickr_instance).to receive(:collections).and_return(collections_api)
+
+      set_ref = double('set_ref', description: '', id: '111', title: 'My Set')
+      collection_data = double(
+        'collection',
+        description: 'A collection',
+        iconlarge:   '',
+        iconsmall:   '',
+        id:          '375727-123',
+        set:         [set_ref],
+        title:       'My Collection'
+      )
+      tree_response = double('tree')
+      allow(tree_response).to receive(:each).and_yield(collection_data)
+      allow(collections_api).to receive(:getTree).and_return(tree_response)
+
+      cli = described_class.new(['export:collections'], config_path: config_path)
+      expect { cli.run }.to output(/Downloaded collection My Collection/).to_stdout
+
+      expect(Dir.exist?(File.join(archive_path, 'collections', '375727-123_my-collection'))).to be true
+    ensure
+      FileUtils.rm_rf(dir)
+    end
+
+    it 'reports error when not authenticated' do
+      cli = described_class.new(['export:collections'], config_path: '/tmp/nonexistent-flickarr.yml')
+      expect { cli.run }.to output(/Not authenticated/).to_stderr
+    end
+  end
+
+  describe 'export:sets command' do
+    it 'exports all sets' do
+      dir = File.join(Dir.tmpdir, "flickarr-cli-test-#{Process.pid}")
+      config_path = File.join(dir, 'config.yml')
+      archive_path = File.join(dir, 'library', 'testuser')
+      FileUtils.mkdir_p(dir)
+
+      config = Flickarr::Config.new
+      config.api_key = 'test-key'
+      config.shared_secret = 'test-secret'
+      config.access_token = 'token'
+      config.access_secret = 'secret'
+      config.user_nsid = '123@N00'
+      config.username = 'testuser'
+      config.library_path = File.join(dir, 'library')
+      config.save(config_path)
+
+      flickr_instance = double('Flickr')
+      allow(Flickr).to receive(:new).and_return(flickr_instance)
+      allow(flickr_instance).to receive(:access_token=)
+      allow(flickr_instance).to receive(:access_secret=)
+
+      photosets_api = double('photosets')
+      allow(flickr_instance).to receive(:photosets).and_return(photosets_api)
+
+      set_data = double(
+        'set',
+        count_comments: '0', count_photos: 1, count_videos: 0, count_views: '0',
+        date_create: '1615022202', date_update: '1615023685',
+        description: '', id: '72157718538273371', owner: '123@N00',
+        primary: '12345', title: 'My Set', username: 'testuser'
+      )
+      sets_response = double('sets_response', total: 1)
+      allow(sets_response).to receive(:each).and_yield(set_data)
+
+      photo_item = double(
+        'photo_item',
+        datetaken: '2024-03-15 14:30:00', datetakenunknown: '0', dateupload: '1710500000',
+        description: 'A photo', id: '12345', isprimary: '1', media: 'photo',
+        originalformat: 'jpg', tags: '', title: 'Test'
+      )
+      photos_response = double('photos_response', photo: [photo_item])
+      allow(photosets_api).to receive_messages(getList: sets_response, getPhotos: photos_response)
+
+      cli = described_class.new(['export:sets'], config_path: config_path)
+      expect { cli.run }.to output(/Downloaded set My Set/).to_stdout
+
+      expect(Dir.exist?(File.join(archive_path, 'sets', '72157718538273371_my-set'))).to be true
+    ensure
+      FileUtils.rm_rf(dir)
+    end
+
+    it 'reports error when not authenticated' do
+      cli = described_class.new(['export:sets'], config_path: '/tmp/nonexistent-flickarr.yml')
+      expect { cli.run }.to output(/Not authenticated/).to_stderr
+    end
+  end
+
   describe 'export:photo command' do
     it 'exports a single photo by Flickr URL' do
       dir = File.join(Dir.tmpdir, "flickarr-cli-test-#{Process.pid}")
