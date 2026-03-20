@@ -15,9 +15,12 @@ module Flickarr
     end
 
     def save path
-      string_hash = to_h.transform_keys(&:to_s)
-      FileUtils.mkdir_p(File.dirname(path))
-      File.write(path, YAML.dump(string_hash))
+      hash = to_h.transform_keys(&:to_s)
+      yaml = YAML.dump hash
+      dir  = File.dirname path
+
+      FileUtils.mkdir_p dir
+      File.write path, yaml
     end
 
     def to_h

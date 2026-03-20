@@ -23,7 +23,7 @@ RSpec.describe Flickarr::CLI do
       config.save(path)
 
       cli = described_class.new(['config'], config_path: path)
-      expect { cli.run }.to output(/api_key: my-key/).to_stdout
+      expect { cli.run }.to output(/api_key\s+my-key/).to_stdout
     ensure
       FileUtils.rm_rf(dir)
     end
@@ -100,7 +100,7 @@ RSpec.describe Flickarr::CLI do
       path = File.join(dir, 'config.yml')
 
       cli = described_class.new(['config:set', 'api_key=my-key'], config_path: path)
-      expect { cli.run }.to output(/api_key: my-key/).to_stdout
+      expect { cli.run }.to output(/api_key\s+my-key/).to_stdout
     ensure
       FileUtils.rm_rf(dir)
     end

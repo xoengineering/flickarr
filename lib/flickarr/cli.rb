@@ -85,8 +85,12 @@ module Flickarr
     end
 
     def print_config config
-      config.to_h.each do |key, value|
-        puts "#{key}: #{value || '(not set)'}"
+      hash      = config.to_h
+      max_width = hash.keys.map { |k| k.to_s.length }.max
+
+      hash.each do |key, value|
+        label = key.to_s.ljust max_width
+        puts "#{label}  #{value || '(not set)'}"
       end
     end
 
