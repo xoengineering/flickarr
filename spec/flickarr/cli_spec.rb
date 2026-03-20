@@ -3,14 +3,19 @@ require 'tmpdir'
 
 RSpec.describe Flickarr::CLI do
   describe '#run' do
-    it 'prints usage when no command is given' do
+    it 'prints help when no command is given' do
       cli = described_class.new([])
-      expect { cli.run }.to output(/Usage:/).to_stdout
+      expect { cli.run }.to output(/USAGE/).to_stdout
     end
 
-    it 'prints usage for unknown commands' do
+    it 'prints help for unknown commands' do
       cli = described_class.new(['bogus'])
-      expect { cli.run }.to output(/Usage:/).to_stdout
+      expect { cli.run }.to output(/USAGE/).to_stdout
+    end
+
+    it 'prints help for help command' do
+      cli = described_class.new(['help'])
+      expect { cli.run }.to output(/USAGE/).to_stdout
     end
   end
 

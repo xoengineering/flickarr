@@ -12,30 +12,34 @@ module Flickarr
       @limit       = nil
       @overwrite   = false
 
-      @parser = build_parser
-      @args   = @parser.parse(args)
+      if args.empty? || %w[-h --help help].include?(args.first)
+        @args = args
+      else
+        @parser = build_parser
+        @args   = @parser.parse(args)
+      end
     end
 
     def run
       command = @args.shift
 
       case command
-      when 'auth'               then run_auth
-      when 'config'             then run_config
-      when 'config:set'         then run_config_set
-      when 'errors' then run_errors
-      when 'export', 'export:posts' then run_export_or_post
-      when 'export:collections'     then run_export_collections_or_one
-      when 'export:photo', 'export:video' then run_export_post
-      when 'export:photos'          then run_export_posts(media: 'photos')
-      when 'export:profile'         then run_export_profile
-      when 'export:sets', 'export:set', 'export:album' then run_export_sets_or_one
-      when 'export:videos' then run_export_posts(media: 'videos')
-      when 'init'               then run_init
-      when 'open'               then run_open
-      when 'path'               then run_path
-      when 'status'             then run_status
-      else                           print_usage
+      when 'auth'                                          then run_auth
+      when 'config'                                        then run_config
+      when 'config:set'                                    then run_config_set
+      when 'errors'                                        then run_errors
+      when 'export', 'export:posts'                        then run_export_or_post
+      when 'export:albums', 'export:sets', 'export:set' then run_export_sets_or_one
+      when 'export:collections'                            then run_export_collections_or_one
+      when 'export:photo', 'export:video'                  then run_export_post
+      when 'export:photos'                                 then run_export_posts(media: 'photos')
+      when 'export:profile'                                then run_export_profile
+      when 'export:videos'                                 then run_export_posts(media: 'videos')
+      when 'init'                                          then run_init
+      when 'open'                                          then run_open
+      when 'path'                                          then run_path
+      when 'status'                                        then run_status
+      else                                                      print_help
       end
     end
 
@@ -660,30 +664,9 @@ module Flickarr
       end
     end
 
-    def print_usage
-      puts @parser
-      puts <<~COMMANDS
-
-        Commands:
-          auth                Authenticate with Flickr
-          config              Show current configuration
-          config <key>        Show a single config value
-          config:set          Set configuration values (key=value)
-          errors                Print path to _errors.log
-          export [url]          Export all posts, or a single post by URL
-          export:collections    Export all collections (groups of sets)
-          export:photo <url>    Export a single post by URL
-          export:video <url>    Export a single post by URL
-          export:photos         Export only photos
-          export:posts          Export all posts (photos + videos)
-          export:profile        Export Flickr profile to archive
-          export:sets           Export all photosets with photo references
-          export:videos         Export only videos
-          init                Create config directory and stub config file
-          open                Open archive folder in Finder
-          path                Print archive path (for scripting)
-          status              Show archive summary
-      COMMANDS
+    def print_help
+      help_path = File.expand_path('../../HELP.txt', __dir__)
+      puts File.read(help_path)
     end
   end
 end

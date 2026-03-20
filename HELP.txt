@@ -1,0 +1,50 @@
+Export and archive your Flickr library
+
+USAGE
+  flickarr command [options]
+  flickarr command:subcommand [options]
+
+EXAMPLES
+  flickarr export
+  flickarr export https://flickr.com/veganstraightedge/3513998015
+  flickarr export https://flickr.com/veganstraightedge/3513998015 --overwrite
+
+  flickarr export --limit 5
+  flickarr export:photos --limit 7
+  flickarr export:videos --limit 3
+
+ARGUMENTS
+  URL                       URL of single item to download from Flickr
+
+FLAGS
+  --limit N                 Stop after N downloads
+  --overwrite               Re-download and overwrite existing files
+
+Commands:
+  init                      Create config directory and stub config file
+  auth                      Authenticate with Flickr
+  config                    Show current configuration
+  config <key>              Show a single config value
+  config:set                Set configuration values (key=value)
+
+  open                      Open archive folder in Finder
+  path                      Print archive path (for scripting)
+  status                    Show archive summary
+  errors                    Print path to _errors.log
+
+  export                    Export all posts
+  export <URL>              Export a single post by URL
+  export:photo <URL>        Export a single post by URL
+  export:video <URL>        Export a single post by URL
+
+  export:posts              Export all posts (photos + videos)
+  export:photos             Export only photos
+  export:videos             Export only videos
+
+  export:sets               Export all photosets with references to posts
+  export:sets <URL>         Export a single photoset with references to posts
+  export:albums             Export all albums with references to posts
+  export:albums <URL>       Export a single album with references to posts
+  export:collections        Export all collections (groups of albums)
+  export:collections <URL>  Export a single collection (groups of albums) with references to albums
+  export:profile            Export Flickr profile to archive
