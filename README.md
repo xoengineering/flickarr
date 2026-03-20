@@ -94,7 +94,7 @@ Run `flickarr help` for the full command reference.
 ## Development
 
 ```sh
-git clone https://github.com/veganstraightedge/flickarr.git
+git clone https://github.com/xoengineering/flickarr.git
 cd flickarr
 bin/setup
 bundle exec rake spec
@@ -102,7 +102,7 @@ bundle exec rake spec
 
 ## Contributing
 
-Bug reports and pull requests are welcome on GitHub at https://github.com/veganstraightedge/flickarr.
+Bug reports and pull requests are welcome on GitHub at https://github.com/xoengineering/flickarr.
 
 ## License
 
