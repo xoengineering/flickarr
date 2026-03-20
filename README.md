@@ -1,10 +1,10 @@
 # Flickarr
 
-Export and archive your Flickr photo library — photos, metadata, tags, albums, and more.
+Export and archive your Flickr photo library — photos, vidoes, metadata, tags, albums, collections, and profile.
 
 ## Installation
 
-```bash
+```sh
 gem install flickarr
 ```
 
