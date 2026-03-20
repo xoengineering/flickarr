@@ -165,6 +165,76 @@ RSpec.describe Flickarr::CLI do
     end
   end
 
+  describe 'export:profile command' do
+    it 'fetches profile info and writes to archive' do
+      dir = File.join(Dir.tmpdir, "flickarr-cli-test-#{Process.pid}")
+      config_path = File.join(dir, 'config.yml')
+      archive_path = File.join(dir, 'library', 'testuser')
+      FileUtils.mkdir_p(dir)
+
+      config = Flickarr::Config.new
+      config.api_key = 'test-key'
+      config.shared_secret = 'test-secret'
+      config.access_token = 'token'
+      config.access_secret = 'secret'
+      config.user_nsid = '123@N00'
+      config.username = 'testuser'
+      config.library_path = File.join(dir, 'library')
+      config.save(config_path)
+
+      flickr_instance = double('Flickr')
+      allow(Flickr).to receive(:new).and_return(flickr_instance)
+      allow(flickr_instance).to receive(:access_token=)
+      allow(flickr_instance).to receive(:access_secret=)
+
+      people_api = double('people')
+      allow(flickr_instance).to receive(:people).and_return(people_api)
+
+      person_response = double(
+        'person',
+        description: 'A photographer',
+        iconfarm:    5,
+        iconserver:  '1234',
+        id:          '123@N00',
+        ispro:       1,
+        location:    'Portland, OR',
+        nsid:        '123@N00',
+        path_alias:  'testuser',
+        photosurl:   'https://www.flickr.com/photos/testuser/',
+        profileurl:  'https://www.flickr.com/people/testuser/',
+        realname:    'Test User',
+        timezone:    double('timezone', label: 'Pacific Time', offset: '-08:00'),
+        username:    'testuser'
+      )
+      allow(people_api).to receive(:getInfo).with(user_id: '123@N00').and_return(person_response)
+      allow(Down).to receive(:download)
+
+      cli = described_class.new(['export:profile'], config_path: config_path)
+      expect { cli.run }.to output(/Exported profile to/).to_stdout
+
+      expect(File.exist?(File.join(archive_path, '_profile', 'profile.json'))).to be true
+      expect(File.exist?(File.join(archive_path, '_profile', 'profile.yaml'))).to be true
+    ensure
+      FileUtils.rm_rf(dir)
+    end
+
+    it 'reports error when not authenticated' do
+      dir = File.join(Dir.tmpdir, "flickarr-cli-test-#{Process.pid}")
+      config_path = File.join(dir, 'config.yml')
+      FileUtils.mkdir_p(dir)
+
+      config = Flickarr::Config.new
+      config.api_key = 'test-key'
+      config.shared_secret = 'test-secret'
+      config.save(config_path)
+
+      cli = described_class.new(['export:profile'], config_path: config_path)
+      expect { cli.run }.to output(/Not authenticated/).to_stderr
+    ensure
+      FileUtils.rm_rf(dir)
+    end
+  end
+
   describe 'init command' do
     it 'creates the config directory and stub config file' do
       dir = File.join(Dir.tmpdir, "flickarr-init-test-#{Process.pid}")

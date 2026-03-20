@@ -18,6 +18,8 @@ module Flickarr
         run_config
       when 'config:set'
         run_config_set
+      when 'export:profile'
+        run_export_profile
       when 'init'
         run_init
       else
@@ -38,6 +40,23 @@ module Flickarr
       config.library_path = File.expand_path(library_path) if library_path
       config.save @config_path
       puts "Initialized Flickarr config at #{@config_path}"
+    end
+
+    def run_export_profile
+      config = Config.load(@config_path)
+
+      unless config.access_token && config.access_secret && config.user_nsid
+        warn 'Error: Not authenticated. Run `flickarr auth` first.'
+        return
+      end
+
+      client   = Client.new(config)
+      person   = client.person_info(user_id: config.user_nsid)
+      profile  = Profile.new(person)
+      archive  = config.archive_path
+
+      profile.write(archive_path: archive)
+      puts "Exported profile to #{File.join(archive, '_profile')}"
     end
 
     def run_auth
