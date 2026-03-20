@@ -32,7 +32,7 @@ module Flickarr
       @id          = info.id
       @description = info.description.to_s
       @extension   = info.originalformat.to_s
-      @license     = info.license.to_s
+      @license     = License.new(info.license)
       @media       = info.media.to_s
       @tags        = extract_tags info
       @title       = info.title.to_s
@@ -98,7 +98,7 @@ module Flickarr
         exif:         exif,
         extension:    extension,
         id:           id,
-        license:      license,
+        license:      license.to_h,
         location:     location,
         media:        media,
         original_url: original_url,

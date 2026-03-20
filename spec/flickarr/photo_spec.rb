@@ -321,7 +321,7 @@ width: 1024)
     end
 
     it 'includes license and views' do
-      expect(photo.to_h[:license]).to eq('4')
+      expect(photo.to_h[:license]).to eq(id: '4', name: 'CC BY 2.0', url: 'https://creativecommons.org/licenses/by/2.0/')
       expect(photo.to_h[:views]).to eq('2781')
     end
   end
