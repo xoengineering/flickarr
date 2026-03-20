@@ -56,7 +56,7 @@ RSpec.describe Flickarr::CLI do
       path = File.join(dir, 'config.yml')
 
       cli = described_class.new(['config:set', 'api_key=new-key'], config_path: path)
-      cli.run
+      expect { cli.run }.to output(String).to_stdout
 
       config = Flickarr::Config.load(path)
       expect(config.api_key).to eq('new-key')
@@ -69,7 +69,7 @@ RSpec.describe Flickarr::CLI do
       path = File.join(dir, 'config.yml')
 
       cli = described_class.new(['config:set', 'api_key=my-key', 'shared_secret=my-secret'], config_path: path)
-      cli.run
+      expect { cli.run }.to output(String).to_stdout
 
       config = Flickarr::Config.load(path)
       expect(config.api_key).to eq('my-key')
@@ -87,7 +87,7 @@ RSpec.describe Flickarr::CLI do
       config.save(path)
 
       cli = described_class.new(['config:set', 'shared_secret=my-secret'], config_path: path)
-      cli.run
+      expect { cli.run }.to output(String).to_stdout
 
       config = Flickarr::Config.load(path)
       expect(config.api_key).to eq('existing-key')
@@ -528,7 +528,7 @@ RSpec.describe Flickarr::CLI do
       path = File.join(dir, 'config.yml')
 
       cli = described_class.new(['init', '/custom/photos'], config_path: path)
-      cli.run
+      expect { cli.run }.to output(String).to_stdout
 
       config = Flickarr::Config.load(path)
       expect(config.library_path).to eq('/custom/photos')
@@ -541,7 +541,7 @@ RSpec.describe Flickarr::CLI do
       path = File.join(dir, 'config.yml')
 
       cli = described_class.new(['init'], config_path: path)
-      cli.run
+      expect { cli.run }.to output(String).to_stdout
 
       config = Flickarr::Config.load(path)
       expect(config.library_path).to eq(File.join(Dir.home, 'Pictures', 'Flickarr'))
