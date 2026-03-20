@@ -1,36 +1,40 @@
 ## [Unreleased]
 
-- Add `flickarr auth` command for Flickr OAuth authentication
-- Add `flickarr config` and `flickarr config:set` for managing credentials
-- Add `flickarr export:collections` to export collections as folders of set references
-- Add `flickarr export` / `export:posts` to bulk export all posts (photos + videos)
-- Add `flickarr export:photo URL` to export a single post by Flickr URL
-- Add `flickarr export:photos` to export only photos
-- Add `flickarr export:videos` to export only videos
-- Add `--limit N` flag to stop bulk export after N posts
-- Add `flickarr export:profile` to export Flickr profile (JSON, YAML, avatar, social links)
-- Add `flickarr export:sets` to export photosets with photo reference files
-- Add `--overwrite` flag to re-download existing files; default skips them
-- Add `flickarr init` command to create config directory and stub file
-- Add `flickarr status` command showing archive summary
-- Add Client with query object API: `client.photo(id:).info`, `client.profile(user_id:).info`
-- Add Config for loading/saving credentials with env var fallback
-- Add Error class hierarchy (AuthError, ApiError, ConfigError, DownloadError)
-- Add License model mapping Flickr license IDs to human-readable names and CC URLs
-- Add Post/Photo/Video model hierarchy with delegated media behavior
-- Add Profile model with data from both people.getInfo and profile.getProfile
-- Add RateLimiter (1 req/sec) to all Flickr API calls
-- Add resume state: saves last page to config, resumes from there on next run
-- Add video post support with poster frame download
-- Fast skip: check file existence from list data before making per-photo API calls
-- Graceful Ctrl+C handling: saves progress and exits cleanly
-- Add `flickarr errors` command to print errors.log path
-- Add `flickarr open` command to open archive in Finder
-- Add `flickarr path` command for scripting
+### Commands
+- `flickarr init` — create config directory and stub config file
+- `flickarr auth` — authenticate with Flickr via OAuth
+- `flickarr config` / `flickarr config <key>` — show configuration
+- `flickarr config:set key=value` — set configuration values
+- `flickarr export` / `flickarr export:posts` — export all posts (photos + videos)
+- `flickarr export URL` — export a single post by Flickr URL
+- `flickarr export:photos` — export only photos
+- `flickarr export:videos` — export only videos
+- `flickarr export:sets` / `flickarr export:albums` — export photosets/albums
+- `flickarr export:collections` — export collections (groups of albums)
+- `flickarr export:profile` — export Flickr profile (avatar, metadata, social links)
+- `flickarr status` — show archive summary with local/upstream counts
+- `flickarr open` — open archive folder in Finder
+- `flickarr path` — print archive path (for scripting)
+- `flickarr errors` — print path to _errors.log
+- `flickarr help` / `-h` / `--help` — show help
+
+### Features
+- Post/Photo/Video model hierarchy with delegated media behavior
+- Full metadata sidecars (JSON + YAML) with EXIF, geo, tags, license, owner, sizes, URLs
+- License model mapping Flickr IDs to human-readable names and Creative Commons URLs
+- Profile data merged from people.getInfo and profile.getProfile
+- Video support with poster frame download
 - Fallback to smaller video sizes when original is unavailable on CDN
-- Failed exports logged to errors.log with post URL and timestamp
-- Graceful error handling for invalid photo IDs and download failures
-- `--limit` now counts actual downloads, not skips
+- Rate limiter (1 req/sec) on all Flickr API calls
+- Resume state: saves last page per media type, resumes on next run
+- Fast skip: checks file existence from list data before per-post API calls
+- Graceful Ctrl+C: saves progress and exits cleanly
+- Failed exports logged to _errors.log with post URL and timestamp
+- `--limit N` counts actual downloads, not skips
+- `--overwrite` to re-download existing files; default skips them
+- `--overwrite` on `status` busts cached upstream totals
+- Single post/set/collection export by URL
+- Client with query object API: `client.photo(id:).info`, `client.profile(user_id:).info`
 
 ## [0.1.0] - 2026-03-19
 

@@ -1,6 +1,38 @@
 # Flickarr
 
-Export and archive your Flickr photo library — photos, vidoes, metadata, tags, albums, collections, and profile.
+Export and archive your Flickr library — photos, videos, metadata, tags, albums, collections, and profile.
+
+## What you get
+
+```
+~/Pictures/Flickarr/username/
+  Profile/
+    avatar.jpg
+    profile.json
+    profile.yaml
+  2024/
+    03/
+      15/
+        12345678901_my-cool-photo.jpg
+        12345678901_my-cool-photo.json
+        12345678901_my-cool-photo.yaml
+  Sets/
+    72157718538273371_vacation-photos/
+      set.json
+      set.yaml
+      photos.json
+      photos.yaml
+  Collections/
+    375727-72157666222057746_travel/
+      collection.json
+      collection.yaml
+      sets.json
+      sets.yaml
+```
+
+Photos and videos are organized by date taken (`YYYY/MM/DD`). Each media file has JSON and YAML sidecar files with full metadata: EXIF, geo/location, tags, license, owner, sizes, and more.
+
+Sets and collections are folders of reference files that point to the downloaded media.
 
 ## Installation
 
@@ -8,30 +40,70 @@ Export and archive your Flickr photo library — photos, vidoes, metadata, tags,
 gem install flickarr
 ```
 
-Or add to your Gemfile:
+## Quick start
 
-```ruby
-gem "flickarr"
+```sh
+flickarr init
+flickarr config:set api_key=YOUR_KEY shared_secret=YOUR_SECRET
+flickarr auth
+flickarr export
 ```
+
+See [HOWTO.md](HOWTO.md) for detailed setup instructions.
 
 ## Usage
 
-_Coming soon._
+```sh
+# Export everything
+flickarr export
+
+# Export a single post by URL
+flickarr export https://www.flickr.com/photos/username/12345678901
+
+# Export only photos or only videos
+flickarr export:photos
+flickarr export:videos
+
+# Export with a limit
+flickarr export --limit 10
+
+# Re-download existing files
+flickarr export --overwrite
+
+# Export albums, sets, collections, profile
+flickarr export:sets
+flickarr export:albums
+flickarr export:collections
+flickarr export:profile
+
+# Utility commands
+flickarr status
+flickarr open
+flickarr path
+flickarr config
+flickarr errors
+```
+
+Run `flickarr help` for the full command reference.
+
+## Requirements
+
+- Ruby >= 4.0
+- A [Flickr API key](https://www.flickr.com/services/apps/create/)
 
 ## Development
 
-After checking out the repo, run `bin/setup` to install dependencies. Then, run `rake spec` to run the tests. You can also run `bin/console` for an interactive prompt that will allow you to experiment.
-
-To install this gem onto your local machine, run `bundle exec rake install`. To release a new version, update the version number in `version.rb`, and then run `bundle exec rake release`, which will create a git tag for the version, push git commits and the created tag, and push the `.gem` file to [rubygems.org](https://rubygems.org).
+```sh
+git clone https://github.com/veganstraightedge/flickarr.git
+cd flickarr
+bin/setup
+bundle exec rake spec
+```
 
 ## Contributing
 
-Bug reports and pull requests are welcome on GitHub at https://github.com/veganstraightedge/flickarr. This project is intended to be a safe, welcoming space for collaboration, and contributors are expected to adhere to the [code of conduct](https://github.com/veganstraightedge/flickarr/blob/main/CODE_OF_CONDUCT.md).
+Bug reports and pull requests are welcome on GitHub at https://github.com/veganstraightedge/flickarr.
 
 ## License
 
-The gem is available as open source under the terms of the [MIT License](https://opensource.org/licenses/MIT).
-
-## Code of Conduct
-
-Everyone interacting in the Flickarr project's codebases, issue trackers, chat rooms and mailing lists is expected to follow the [code of conduct](https://github.com/veganstraightedge/flickarr/blob/main/CODE_OF_CONDUCT.md).
+MIT License. See [LICENSE.txt](LICENSE.txt).
