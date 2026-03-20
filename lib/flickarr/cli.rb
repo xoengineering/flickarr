@@ -29,6 +29,7 @@ module Flickarr
       when 'export:sets'        then run_export_sets
       when 'init'               then run_init
       when 'open'               then run_open
+      when 'path'               then run_path
       when 'status'             then run_status
       else                           print_usage
       end
@@ -125,6 +126,17 @@ module Flickarr
       end
 
       system 'open', archive
+    end
+
+    def run_path
+      config  = Config.load(@config_path)
+      archive = config.archive_path
+
+      if archive
+        puts archive
+      else
+        warn 'Error: No archive path configured. Run `flickarr auth` first.'
+      end
     end
 
     def run_init
@@ -471,6 +483,7 @@ module Flickarr
           export:sets         Export all photosets with photo references
           init                Create config directory and stub config file
           open                Open archive folder in Finder
+          path                Print archive path (for scripting)
           status              Show archive summary
       COMMANDS
     end
