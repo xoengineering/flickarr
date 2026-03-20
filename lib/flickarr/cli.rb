@@ -326,16 +326,15 @@ module Flickarr
           response.each do |list_post|
             throw(:stop_export) if interrupted
 
-            count     += 1
-            run_count += 1
+            count += 1
 
             if !@overwrite && File.exist?(Post.file_path_from_list_item(list_post, archive_path: archive))
               puts "Skipped #{list_post.media} #{list_post.id} (#{count}/#{total})"
             else
               export_single_post(client: client, config: config, post_id: list_post.id, count: count, total: total)
+              run_count += 1
+              throw(:stop_export) if @limit && run_count >= @limit
             end
-
-            throw(:stop_export) if @limit && run_count >= @limit
           end
 
           write_last_page config, media, page
