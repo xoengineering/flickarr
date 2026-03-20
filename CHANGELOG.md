@@ -15,6 +15,7 @@
 - Add Photo model with slug, date-based folder paths, EXIF, geo, and original size download
 - Add Profile model with data from both people.getInfo and profile.getProfile
 - Add RateLimiter (1 req/sec) to all Flickr API calls
+- Add resume state: saves last page to config, resumes from there on next run
 - Add video post support with poster frame download
 - Graceful error handling for invalid photo IDs
 
