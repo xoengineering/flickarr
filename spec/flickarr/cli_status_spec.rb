@@ -39,7 +39,7 @@ RSpec.describe Flickarr::CLI do
         .and(matching(/Collections:.*1/))
         .and(matching(/Disk usage:/))
         .and(matching(/Photos:.*1/))
-        .and(matching(/Profile:.*downloaded/))
+        .and(matching(/Profile:.*Downloaded/))
         .and(matching(/Sets:.*1/))
         .and(matching(/Videos:.*1/))
       ).to_stdout

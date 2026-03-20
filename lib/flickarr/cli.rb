@@ -3,8 +3,8 @@ require 'optparse'
 module Flickarr
   class CLI
     DEFAULT_CONFIG_PATH = File.join(Dir.home, '.flickarr', 'config.yml').freeze
-    VALID_CONFIG_KEYS = %i[access_secret access_token api_key last_export_page library_path shared_secret user_nsid
-                           username].freeze
+    VALID_CONFIG_KEYS = %i[access_secret access_token api_key last_export_page library_path shared_secret
+                           total_collections total_photos total_sets total_videos user_nsid username].freeze
 
     def initialize args, config_path: DEFAULT_CONFIG_PATH
       @config_path = config_path
@@ -136,6 +136,8 @@ module Flickarr
         return
       end
 
+      fetch_and_cache_totals(config) unless config.total_photos
+
       profile_exists   = File.exist?(File.join(archive, 'Profile', 'profile.json'))
       photo_count      = count_media_files(archive, %w[jpg jpeg png gif tiff])
       video_count      = count_media_files(archive, %w[mp4])
@@ -145,11 +147,11 @@ module Flickarr
 
       rows = [
         ['Archive',     archive],
-        ['Profile',     profile_exists ? 'downloaded' : 'not downloaded'],
-        ['Photos',      photo_count],
-        ['Videos',      video_count],
-        ['Sets',        set_count],
-        ['Collections', collection_count],
+        ['Profile',     profile_exists ? 'Downloaded' : 'Not downloaded'],
+        ['Photos',      format_count(photo_count, config.total_photos)],
+        ['Videos',      format_count(video_count, config.total_videos)],
+        ['Sets',        format_count(set_count, config.total_sets)],
+        ['Collections', format_count(collection_count, config.total_collections)],
         ['Disk usage',  disk_usage]
       ]
 
@@ -157,6 +159,30 @@ module Flickarr
       rows.each do |label, value|
         puts "#{"#{label}:".ljust(max_width)}  #{value}"
       end
+    end
+
+    def fetch_and_cache_totals config
+      return unless config.access_token && config.access_secret && config.user_nsid
+
+      client = Client.new(config)
+
+      photos_response = client.photos(user_id: config.user_nsid, per_page: 1)
+      config.total_photos = photos_response.total.to_i
+
+      videos_response = client.flickr.photos.search(user_id: config.user_nsid, media: 'videos', per_page: 1)
+      config.total_videos = videos_response.total.to_i
+
+      sets_response = client.sets(user_id: config.user_nsid)
+      config.total_sets = sets_response.respond_to?(:total) ? sets_response.total.to_i : 0
+
+      collections_response = client.collections(user_id: config.user_nsid)
+      config.total_collections = collections_response.respond_to?(:count) ? collections_response.count : 0
+
+      config.save @config_path
+    end
+
+    def format_count local, total
+      total ? "#{local} / #{total}" : local.to_s
     end
 
     def count_media_files archive, extensions
@@ -391,14 +417,18 @@ module Flickarr
 
     def set_config_attr config, key, value
       case key
-      when 'access_secret'    then config.access_secret = value
-      when 'access_token'     then config.access_token = value
-      when 'api_key'          then config.api_key = value
-      when 'last_export_page' then config.last_export_page = value.to_i
-      when 'library_path'     then config.library_path = value
-      when 'shared_secret'    then config.shared_secret = value
-      when 'user_nsid'        then config.user_nsid = value
-      when 'username'         then config.username = value
+      when 'access_secret'     then config.access_secret = value
+      when 'access_token'      then config.access_token = value
+      when 'api_key'           then config.api_key = value
+      when 'last_export_page'  then config.last_export_page = value.to_i
+      when 'library_path'      then config.library_path = value
+      when 'shared_secret'     then config.shared_secret = value
+      when 'total_collections' then config.total_collections = value.to_i
+      when 'total_photos'      then config.total_photos = value.to_i
+      when 'total_sets'        then config.total_sets = value.to_i
+      when 'total_videos'      then config.total_videos = value.to_i
+      when 'user_nsid'         then config.user_nsid = value
+      when 'username'          then config.username = value
       end
     end
 
