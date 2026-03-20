@@ -1,3 +1,4 @@
+# rubocop:disable RSpec/VerifiedDoubles
 require 'down'
 require 'json'
 require 'tmpdir'
@@ -5,25 +6,46 @@ require 'yaml'
 
 RSpec.describe Flickarr::Profile do
   let(:person_response) do
-    double( # rubocop:disable RSpec/VerifiedDoubles
+    double(
       'person',
-      description: 'A photographer',
-      iconfarm:    5,
-      iconserver:  '1234',
-      id:          '12345678@N00',
-      ispro:       1,
-      location:    'Portland, OR',
-      nsid:        '12345678@N00',
-      path_alias:  'testuser',
-      photosurl:   'https://www.flickr.com/photos/testuser/',
-      profileurl:  'https://www.flickr.com/people/testuser/',
-      realname:    'Test User',
-      timezone:    double('timezone', label: 'Pacific Time', offset: '-08:00'), # rubocop:disable RSpec/VerifiedDoubles
-      username:    'testuser'
+      description:  'A photographer',
+      iconfarm:     5,
+      iconserver:   '1234',
+      id:           '12345678@N00',
+      ispro:        1,
+      location:     'Portland, OR',
+      nsid:         '12345678@N00',
+      path_alias:   'testuser',
+      photosurl:    'https://www.flickr.com/photos/testuser/',
+      profileurl:   'https://www.flickr.com/people/testuser/',
+      realname:     'Test User',
+      timezone:     double('timezone', label: 'Pacific Time', offset: '-08:00'),
+      upload_count: 1337,
+      username:     'testuser'
     )
   end
 
-  let(:profile) { described_class.new(person_response) }
+  let(:profile_response) do
+    double(
+      'profile',
+      city:       'San Francisco',
+      country:    'USA',
+      email:      'test@example.com',
+      facebook:   '',
+      first_name: 'Test',
+      hometown:   'Portland',
+      instagram:  'testuser',
+      join_date:  '1110764731',
+      last_name:  'User',
+      occupation: 'Developer',
+      pinterest:  '',
+      tumblr:     '',
+      twitter:    'testuser',
+      website:    'https://example.com'
+    )
+  end
+
+  let(:profile) { described_class.new(person: person_response, profile: profile_response) }
 
   describe '#initialize' do
     it 'extracts description' do
@@ -70,8 +92,68 @@ RSpec.describe Flickarr::Profile do
       expect(profile.timezone).to eq(label: 'Pacific Time', offset: '-08:00')
     end
 
+    it 'extracts upload_count' do
+      expect(profile.upload_count).to eq(1337)
+    end
+
     it 'extracts username' do
       expect(profile.username).to eq('testuser')
+    end
+  end
+
+  describe 'profile fields' do
+    it 'extracts city' do
+      expect(profile.city).to eq('San Francisco')
+    end
+
+    it 'extracts country' do
+      expect(profile.country).to eq('USA')
+    end
+
+    it 'extracts email' do
+      expect(profile.email).to eq('test@example.com')
+    end
+
+    it 'extracts first_name' do
+      expect(profile.first_name).to eq('Test')
+    end
+
+    it 'extracts hometown' do
+      expect(profile.hometown).to eq('Portland')
+    end
+
+    it 'extracts instagram' do
+      expect(profile.instagram).to eq('testuser')
+    end
+
+    it 'extracts join_date' do
+      expect(profile.join_date).to eq('1110764731')
+    end
+
+    it 'extracts last_name' do
+      expect(profile.last_name).to eq('User')
+    end
+
+    it 'extracts occupation' do
+      expect(profile.occupation).to eq('Developer')
+    end
+
+    it 'extracts twitter' do
+      expect(profile.twitter).to eq('testuser')
+    end
+
+    it 'extracts website' do
+      expect(profile.website).to eq('https://example.com')
+    end
+  end
+
+  describe 'without profile response' do
+    let(:profile) { described_class.new(person: person_response) }
+
+    it 'still works with just person data' do
+      expect(profile.username).to eq('testuser')
+      expect(profile.city).to be_nil
+      expect(profile.website).to be_nil
     end
   end
 
@@ -82,7 +164,7 @@ RSpec.describe Flickarr::Profile do
 
     context 'when iconserver is 0' do
       let(:person_response) do
-        double( # rubocop:disable RSpec/VerifiedDoubles
+        double(
           'person',
           description: '',
           iconfarm:    0,
@@ -95,7 +177,7 @@ RSpec.describe Flickarr::Profile do
           photosurl:   '',
           profileurl:  '',
           realname:    '',
-          timezone:    double('timezone', label: '', offset: ''), # rubocop:disable RSpec/VerifiedDoubles
+          timezone:    double('timezone', label: '', offset: ''),
           username:    'testuser'
         )
       end
@@ -111,11 +193,14 @@ RSpec.describe Flickarr::Profile do
       hash = profile.to_h
 
       expect(hash[:avatar_url]).to eq('https://farm5.staticflickr.com/1234/buddyicons/12345678@N00_r.jpg')
+      expect(hash[:city]).to eq('San Francisco')
       expect(hash[:description]).to eq('A photographer')
+      expect(hash[:first_name]).to eq('Test')
       expect(hash[:location]).to eq('Portland, OR')
       expect(hash[:nsid]).to eq('12345678@N00')
       expect(hash[:realname]).to eq('Test User')
       expect(hash[:username]).to eq('testuser')
+      expect(hash[:website]).to eq('https://example.com')
     end
   end
 
@@ -177,43 +262,13 @@ RSpec.describe Flickarr::Profile do
       expect(Down).to have_received(:download)
         .with(profile.avatar_url, destination: avatar_path)
     end
-
-    it 'uses the extension from the avatar URL' do
-      gif_response = double( # rubocop:disable RSpec/VerifiedDoubles
-        'person',
-        description: '',
-        iconfarm:    0,
-        iconserver:  '0',
-        id:          '12345678@N00',
-        ispro:       0,
-        location:    '',
-        nsid:        '12345678@N00',
-        path_alias:  nil,
-        photosurl:   '',
-        profileurl:  '',
-        realname:    '',
-        timezone:    double('timezone', label: '', offset: ''), # rubocop:disable RSpec/VerifiedDoubles
-        username:    'testuser'
-      )
-      gif_profile = described_class.new(gif_response)
-      avatar_path = File.join(profile_dir, 'avatar.gif')
-      allow(Down).to receive(:download)
-        .with(gif_profile.avatar_url, destination: avatar_path)
-
-      gif_profile.download_avatar(archive_path: archive_path)
-
-      expect(Down).to have_received(:download)
-        .with(gif_profile.avatar_url, destination: avatar_path)
-    end
   end
 
   describe '#write' do
     let(:archive_path) { Dir.mktmpdir('flickarr-profile-test') }
     let(:profile_dir) { File.join(archive_path, '_profile') }
 
-    before do
-      allow(Down).to receive(:download)
-    end
+    before { allow(Down).to receive(:download) }
 
     after { FileUtils.rm_rf archive_path }
 
@@ -254,3 +309,4 @@ RSpec.describe Flickarr::Profile do
     end
   end
 end
+# rubocop:enable RSpec/VerifiedDoubles

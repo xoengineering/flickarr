@@ -142,10 +142,10 @@ module Flickarr
         return
       end
 
-      client   = Client.new(config)
-      person   = client.profile(user_id: config.user_nsid).info
-      profile  = Profile.new(person)
-      archive  = config.archive_path
+      client = Client.new(config)
+      profile_query = client.profile(user_id: config.user_nsid)
+      profile = Profile.new(person: profile_query.info, profile: profile_query.profile)
+      archive = config.archive_path
 
       status      = profile.write(archive_path: archive, overwrite: @overwrite)
       profile_dir = File.join archive, '_profile'

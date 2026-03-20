@@ -10,6 +10,10 @@ module Flickarr
       def info
         @rate_limiter.track { @flickr.people.getInfo(user_id: @user_id) }
       end
+
+      def profile
+        @rate_limiter.track { @flickr.profile.getProfile(user_id: @user_id) }
+      end
     end
   end
 end

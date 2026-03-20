@@ -380,7 +380,8 @@ RSpec.describe Flickarr::CLI do
       allow(flickr_instance).to receive(:access_secret=)
 
       people_api = double('people')
-      allow(flickr_instance).to receive(:people).and_return(people_api)
+      profile_api = double('profile_api')
+      allow(flickr_instance).to receive_messages(people: people_api, profile: profile_api)
 
       person_response = double(
         'person',
@@ -398,7 +399,14 @@ RSpec.describe Flickarr::CLI do
         timezone:    double('timezone', label: 'Pacific Time', offset: '-08:00'),
         username:    'testuser'
       )
+      profile_response = double(
+        'profile_response',
+        city: '', country: '', email: '', facebook: '', first_name: 'Test',
+        hometown: '', instagram: '', join_date: '1110764731', last_name: 'User',
+        occupation: '', pinterest: '', tumblr: '', twitter: '', website: ''
+      )
       allow(people_api).to receive(:getInfo).with(user_id: '123@N00').and_return(person_response)
+      allow(profile_api).to receive(:getProfile).with(user_id: '123@N00').and_return(profile_response)
       allow(Down).to receive(:download)
 
       cli = described_class.new(['export:profile'], config_path: config_path)
