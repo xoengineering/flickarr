@@ -359,14 +359,17 @@ module Flickarr
       query = client.photo(id: post_id)
 
       begin
-        post = Post.build(info: query.info, sizes: query.sizes.size, exif: query.exif)
+        post   = Post.build(info: query.info, sizes: query.sizes.size, exif: query.exif)
+        status = post.write(archive_path: archive, overwrite: @overwrite)
       rescue Flickr::FailedResponse => e
         warn "Error on post #{post_id}: #{e.message}"
         return
+      rescue Down::Error => e
+        warn "Download error on post #{post_id}: #{e.message}"
+        return
       end
 
-      status = post.write(archive_path: archive, overwrite: @overwrite)
-      path   = File.join archive, post.folder_path
+      path = File.join archive, post.folder_path
 
       case status
       when :created     then puts "Downloaded #{post.media} #{post_id} to #{path} (#{count}/#{total})"
