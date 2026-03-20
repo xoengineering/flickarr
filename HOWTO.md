@@ -111,10 +111,14 @@ flickarr export:photos
 flickarr export:videos
 ```
 
-Export a single post by its Flickr URL:
+Export a single item by its Flickr URL — `export` auto-detects the URL type (post, album, collection, or profile):
 
 ```sh
-flickarr export https://flickr.com/veganstraightedge/3513998015
+flickarr export https://flickr.com/photos/USERNAME/3513998015
+flickarr export https://flickr.com/photos/USERNAME/sets/72157718538273371/
+flickarr export https://flickr.com/photos/USERNAME/albums/72157718538273371/
+flickarr export https://flickr.com/photos/USERNAME/collections/72157666222057746/
+flickarr export https://flickr.com/photos/USERNAME/
 ```
 
 ## 9. Export your albums and collections

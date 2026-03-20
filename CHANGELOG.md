@@ -33,6 +33,7 @@
 - `--limit N` counts actual downloads, not skips
 - `--overwrite` to re-download existing files; default skips them
 - `--overwrite` on `status` busts cached upstream totals
+- Smart URL routing: `export URL` auto-detects post, set/album, collection, or profile URLs
 - Single post/set/collection export by URL
 - Client with query object API: `client.photo(id:).info`, `client.profile(user_id:).info`
 
