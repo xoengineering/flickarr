@@ -2,7 +2,7 @@
 
 ## Refactors
 - [ ] Refactor CLI arg parsing to use stdlib optparse
-- [ ] Rename `_profile/` to `profile/`
+- [x] Rename `_profile/` to `profile/`
 
 ## Features
 - [ ] Export sets/collections as folders of reference files
