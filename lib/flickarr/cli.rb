@@ -98,8 +98,9 @@ module Flickarr
       archive    = config.archive_path
       last_page  = config.last_export_page
       start_page = last_page ? last_page + 1 : 1
+      per_page   = 100
       page       = start_page
-      count      = 0
+      count      = (start_page - 1) * per_page
 
       puts "Starting from page #{page}..." if page > 1
 
