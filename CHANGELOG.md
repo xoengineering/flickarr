@@ -1,5 +1,11 @@
 ## [Unreleased]
 
+## [0.1.1] - 2026-03-19
+
+- Fix repo URLs in the gem/gemspec, so that rubygems.org links to the correct place
+
+## [0.1.0] - 2026-03-19
+
 ### Commands
 - `flickarr init` — create config directory and stub config file
 - `flickarr auth` — authenticate with Flickr via OAuth
@@ -36,7 +42,3 @@
 - Smart URL routing: `export URL` auto-detects post, set/album, collection, or profile URLs
 - Single post/set/collection export by URL
 - Client with query object API: `client.photo(id:).info`, `client.profile(user_id:).info`
-
-## [0.1.0] - 2026-03-19
-
-- Initial release
