@@ -1,5 +1,7 @@
 ## [Unreleased]
 
+## [0.1.4] - 2026-03-22
+
 - Retry transient network errors (connection reset, timeouts, HTML-instead-of-JSON) up to 3 times with backoff
 
 ## [0.1.3] - 2026-03-22
