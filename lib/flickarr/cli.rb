@@ -459,7 +459,19 @@ module Flickarr
 
       catch(:stop_export) do
         loop do
-          response    = fetch_posts_page(client: client, config: config, media: media, page: page)
+          page_retries = 3
+          begin
+            response = fetch_posts_page(client: client, config: config, media: media, page: page)
+          rescue Errno::ECONNRESET, JSON::ParserError, Net::OpenTimeout, Net::ReadTimeout, Errno::ETIMEDOUT => e
+            page_retries -= 1
+            if page_retries.positive?
+              warn "Transient error fetching page #{page}: #{e.message} — retrying in 5s (#{page_retries} left)"
+              sleep 5
+              retry
+            end
+            warn "Failed to fetch page #{page} after retries: #{e.message}"
+            break
+          end
           total       = response.total.to_i
           total_pages = response.pages.to_i
 
@@ -531,12 +543,23 @@ module Flickarr
     end
 
     def export_single_post client:, config:, post_id:, count:, total:
+      retries = 3
       query   = client.photo(id: post_id)
       archive = config.archive_path
 
       begin
         post   = Post.build(info: query.info, sizes: query.sizes.size, exif: query.exif)
         status = post.write(archive_path: archive, overwrite: @overwrite)
+      rescue Errno::ECONNRESET, JSON::ParserError, Net::OpenTimeout, Net::ReadTimeout, Errno::ETIMEDOUT => e
+        retries -= 1
+        if retries.positive?
+          warn "Transient error on post #{post_id}: #{e.message} — retrying in 5s (#{retries} left)"
+          sleep 5
+          retry
+        end
+        warn "Failed post #{post_id} after retries: #{e.message}"
+        log_error archive: archive, post_id: post_id, username: config.username, error: e
+        return
       rescue Flickr::FailedResponse => e
         warn "Error on post #{post_id}: #{e.message}"
         log_error archive: archive, post_id: post_id, username: config.username, error: e

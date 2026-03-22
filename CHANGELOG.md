@@ -1,5 +1,7 @@
 ## [Unreleased]
 
+- Retry transient network errors (connection reset, timeouts, HTML-instead-of-JSON) up to 3 times with backoff
+
 ## [0.1.3] - 2026-03-22
 
 - Fix crash on photos with partial location data (e.g. coordinates but no locality)
