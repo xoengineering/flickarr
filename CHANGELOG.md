@@ -1,5 +1,9 @@
 ## [Unreleased]
 
+## [0.1.3] - 2026-03-22
+
+- Fix crash on photos with partial location data (e.g. coordinates but no locality)
+
 ## [0.1.1] - 2026-03-19
 
 - Fix repo URLs in the gem/gemspec, so that rubygems.org links to the correct place

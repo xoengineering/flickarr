@@ -185,15 +185,15 @@ module Flickarr
       loc = info.location
 
       {
-        accuracy:  loc.accuracy.to_s,
-        context:   loc.context.to_s,
-        country:   loc.country.to_s,
-        county:    loc.county.to_s,
-        latitude:  loc.latitude.to_s,
-        locality:  loc.locality.to_s,
-        longitude: loc.longitude.to_s,
-        region:    loc.region.to_s
-      }
+        accuracy:  loc.respond_to?(:accuracy)  ? loc.accuracy.to_s  : nil,
+        context:   loc.respond_to?(:context)   ? loc.context.to_s   : nil,
+        country:   loc.respond_to?(:country)   ? loc.country.to_s   : nil,
+        county:    loc.respond_to?(:county)    ? loc.county.to_s    : nil,
+        latitude:  loc.respond_to?(:latitude)  ? loc.latitude.to_s  : nil,
+        locality:  loc.respond_to?(:locality)  ? loc.locality.to_s  : nil,
+        longitude: loc.respond_to?(:longitude) ? loc.longitude.to_s : nil,
+        region:    loc.respond_to?(:region)    ? loc.region.to_s    : nil
+      }.compact
     end
 
     def extract_owner info
