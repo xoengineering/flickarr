@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    flickarr (0.1.4)
+    flickarr (0.1.5)
       cgi (~> 0.5)
       down (~> 5.4)
       flickr (~> 2.1)
@@ -152,7 +152,7 @@ CHECKSUMS
   ffi (1.17.3) sha256=0e9f39f7bb3934f77ad6feab49662be77e87eedcdeb2a3f5c0234c2938563d4c
   ffi (1.17.3-arm64-darwin) sha256=0c690555d4cee17a7f07c04d59df39b2fba74ec440b19da1f685c6579bb0717f
   ffi-compiler (1.3.2) sha256=a94f3d81d12caf5c5d4ecf13980a70d0aeaa72268f3b9cc13358bcc6509184a0
-  flickarr (0.1.4)
+  flickarr (0.1.5)
   flickr (2.1.0) sha256=ca6b4a72ef80f8786605eccc4e5647653ea4f0174f917316daa8d1109e03f77b
   http (5.3.1) sha256=c50802d8e9be3926cb84ac3b36d1a31fbbac383bc4cbecdce9053cb604231d7d
   http-cookie (1.1.0) sha256=38a5e60d1527eebc396831b8c4b9455440509881219273a6c99943d29eadbb19
