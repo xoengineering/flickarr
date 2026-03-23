@@ -12,7 +12,7 @@ module Flickarr
       @limit       = nil
       @overwrite   = false
 
-      if args.empty? || %w[-h --help help].include?(args.first)
+      if args.empty? || %w[-h --help help -v --version version].include?(args.first)
         @args = args
       else
         @parser = build_parser
@@ -35,6 +35,7 @@ module Flickarr
       when 'export:photos'                                 then run_export_posts(media: 'photos')
       when 'export:profile'                                then run_export_profile
       when 'export:videos'                                 then run_export_posts(media: 'videos')
+      when '-v', '--version', 'version'                    then puts Flickarr::VERSION
       when 'init'                                          then run_init
       when 'open'                                          then run_open
       when 'path'                                          then run_path
@@ -707,6 +708,8 @@ module Flickarr
     end
 
     def print_help
+      puts "flickarr version #{Flickarr::VERSION}"
+      puts
       help_path = File.expand_path('../../HELP.txt', __dir__)
       puts File.read(help_path)
       puts

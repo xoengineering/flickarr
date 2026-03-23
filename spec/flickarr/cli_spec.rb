@@ -17,6 +17,26 @@ RSpec.describe Flickarr::CLI do
       cli = described_class.new(['help'])
       expect { cli.run }.to output(/USAGE/).to_stdout
     end
+
+    it 'prints help with version header' do
+      cli = described_class.new([])
+      expect { cli.run }.to output(/flickarr version #{Flickarr::VERSION}/o).to_stdout
+    end
+
+    it 'prints version for -v' do
+      cli = described_class.new(['-v'])
+      expect { cli.run }.to output("#{Flickarr::VERSION}\n").to_stdout
+    end
+
+    it 'prints version for --version' do
+      cli = described_class.new(['--version'])
+      expect { cli.run }.to output("#{Flickarr::VERSION}\n").to_stdout
+    end
+
+    it 'prints version for version command' do
+      cli = described_class.new(['version'])
+      expect { cli.run }.to output("#{Flickarr::VERSION}\n").to_stdout
+    end
   end
 
   describe 'config' do
