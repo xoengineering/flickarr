@@ -305,7 +305,7 @@ module Flickarr
       collection_count = count_subdirs(File.join(archive, 'Collections'))
       disk_usage       = human_size(dir_size(archive))
 
-      checker = VersionChecker.new(config)
+      checker = Version.new(config)
       checker.check
       config.save(@config_path)
       version_str = checker.update_message || "#{Flickarr::VERSION} (up to date)"
@@ -367,7 +367,7 @@ module Flickarr
       return unless File.exist?(@config_path)
 
       config  = Config.load(@config_path)
-      checker = VersionChecker.new(config)
+      checker = Version.new(config)
       return unless checker.stale?
 
       message = checker.update_message
@@ -381,7 +381,7 @@ module Flickarr
 
     def run_version
       config  = Config.load(@config_path)
-      checker = VersionChecker.new(config)
+      checker = Version.new(config)
       latest  = checker.check
       config.save(@config_path)
 

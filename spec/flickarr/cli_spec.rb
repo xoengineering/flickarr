@@ -27,9 +27,9 @@ RSpec.describe Flickarr::CLI do
       cli = described_class.new(['-v'])
       config = Flickarr::Config.new
       allow(config).to receive(:save)
-      checker = instance_double(Flickarr::VersionChecker, check: Flickarr::VERSION, stale?: false, update_message: nil)
+      checker = instance_double(Flickarr::Version, check: Flickarr::VERSION, stale?: false, update_message: nil)
       allow(Flickarr::Config).to receive(:load).and_return(config)
-      allow(Flickarr::VersionChecker).to receive(:new).and_return(checker)
+      allow(Flickarr::Version).to receive(:new).and_return(checker)
       expect { cli.run }.to output(/#{Regexp.escape(Flickarr::VERSION)}/o).to_stdout
     end
 
@@ -37,9 +37,9 @@ RSpec.describe Flickarr::CLI do
       cli = described_class.new(['--version'])
       config = Flickarr::Config.new
       allow(config).to receive(:save)
-      checker = instance_double(Flickarr::VersionChecker, check: Flickarr::VERSION, stale?: false, update_message: nil)
+      checker = instance_double(Flickarr::Version, check: Flickarr::VERSION, stale?: false, update_message: nil)
       allow(Flickarr::Config).to receive(:load).and_return(config)
-      allow(Flickarr::VersionChecker).to receive(:new).and_return(checker)
+      allow(Flickarr::Version).to receive(:new).and_return(checker)
       expect { cli.run }.to output(/#{Regexp.escape(Flickarr::VERSION)}/o).to_stdout
     end
 
@@ -47,9 +47,9 @@ RSpec.describe Flickarr::CLI do
       cli = described_class.new(['version'])
       config = Flickarr::Config.new
       allow(config).to receive(:save)
-      checker = instance_double(Flickarr::VersionChecker, check: Flickarr::VERSION, stale?: false, update_message: nil)
+      checker = instance_double(Flickarr::Version, check: Flickarr::VERSION, stale?: false, update_message: nil)
       allow(Flickarr::Config).to receive(:load).and_return(config)
-      allow(Flickarr::VersionChecker).to receive(:new).and_return(checker)
+      allow(Flickarr::Version).to receive(:new).and_return(checker)
       expect { cli.run }.to output(/#{Regexp.escape(Flickarr::VERSION)}/o).to_stdout
     end
   end

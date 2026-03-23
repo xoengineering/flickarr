@@ -11,7 +11,6 @@ require_relative 'flickarr/photo'
 require_relative 'flickarr/photo_set'
 require_relative 'flickarr/profile'
 require_relative 'flickarr/rate_limiter'
-require_relative 'flickarr/version_checker'
 require_relative 'flickarr/video'
 
 module Flickarr

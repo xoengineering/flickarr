@@ -1,6 +1,6 @@
 require 'tmpdir'
 
-RSpec.describe Flickarr::VersionChecker do
+RSpec.describe Flickarr::Version do
   let(:config) { Flickarr::Config.new }
 
   describe '#stale?' do
