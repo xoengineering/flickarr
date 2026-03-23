@@ -4,7 +4,8 @@ module Flickarr
   class CLI
     DEFAULT_CONFIG_PATH = File.join(Dir.home, '.flickarr', 'config.yml').freeze
     VALID_CONFIG_KEYS = %i[access_secret access_token api_key last_page_photos last_page_posts last_page_videos
-                           library_path shared_secret total_collections total_photos total_sets total_videos
+                           latest_version latest_version_checked_at library_path shared_secret
+                           total_collections total_photos total_sets total_videos
                            user_nsid username].freeze
 
     def initialize args, config_path: DEFAULT_CONFIG_PATH
@@ -42,6 +43,8 @@ module Flickarr
       when 'status'                                        then run_status
       else                                                      print_help
       end
+
+      check_for_update unless %w[-v --version version status -h --help help config config:set init].include?(command)
     end
 
     private
@@ -302,7 +305,13 @@ module Flickarr
       collection_count = count_subdirs(File.join(archive, 'Collections'))
       disk_usage       = human_size(dir_size(archive))
 
+      checker = VersionChecker.new(config)
+      checker.check
+      config.save(@config_path)
+      version_str = checker.update_message || "#{Flickarr::VERSION} (up to date)"
+
       rows = [
+        ['Version',     version_str],
         ['Archive',     archive],
         ['Profile',     profile_exists ? 'Downloaded' : 'Not downloaded'],
         ['Photos',      format_count(photo_count, config.total_photos)],
@@ -354,8 +363,33 @@ module Flickarr
       end
     end
 
+    def check_for_update
+      return unless File.exist?(@config_path)
+
+      config  = Config.load(@config_path)
+      checker = VersionChecker.new(config)
+      return unless checker.stale?
+
+      message = checker.update_message
+      config.save(@config_path)
+      return unless message
+
+      warn "\n#{message}"
+    rescue StandardError
+      nil
+    end
+
     def run_version
-      puts Flickarr::VERSION
+      config  = Config.load(@config_path)
+      checker = VersionChecker.new(config)
+      latest  = checker.check
+      config.save(@config_path)
+
+      if latest && Gem::Version.new(latest) > Gem::Version.new(Flickarr::VERSION)
+        puts "#{Flickarr::VERSION} (latest: #{latest} — run `gem update flickarr`)"
+      else
+        puts "#{Flickarr::VERSION} (up to date)"
+      end
     end
 
     def count_subdirs path

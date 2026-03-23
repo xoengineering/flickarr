@@ -25,17 +25,32 @@ RSpec.describe Flickarr::CLI do
 
     it 'prints version for -v' do
       cli = described_class.new(['-v'])
-      expect { cli.run }.to output("#{Flickarr::VERSION}\n").to_stdout
+      config = Flickarr::Config.new
+      allow(config).to receive(:save)
+      checker = instance_double(Flickarr::VersionChecker, check: Flickarr::VERSION, stale?: false, update_message: nil)
+      allow(Flickarr::Config).to receive(:load).and_return(config)
+      allow(Flickarr::VersionChecker).to receive(:new).and_return(checker)
+      expect { cli.run }.to output(/#{Regexp.escape(Flickarr::VERSION)}/o).to_stdout
     end
 
     it 'prints version for --version' do
       cli = described_class.new(['--version'])
-      expect { cli.run }.to output("#{Flickarr::VERSION}\n").to_stdout
+      config = Flickarr::Config.new
+      allow(config).to receive(:save)
+      checker = instance_double(Flickarr::VersionChecker, check: Flickarr::VERSION, stale?: false, update_message: nil)
+      allow(Flickarr::Config).to receive(:load).and_return(config)
+      allow(Flickarr::VersionChecker).to receive(:new).and_return(checker)
+      expect { cli.run }.to output(/#{Regexp.escape(Flickarr::VERSION)}/o).to_stdout
     end
 
     it 'prints version for version command' do
       cli = described_class.new(['version'])
-      expect { cli.run }.to output("#{Flickarr::VERSION}\n").to_stdout
+      config = Flickarr::Config.new
+      allow(config).to receive(:save)
+      checker = instance_double(Flickarr::VersionChecker, check: Flickarr::VERSION, stale?: false, update_message: nil)
+      allow(Flickarr::Config).to receive(:load).and_return(config)
+      allow(Flickarr::VersionChecker).to receive(:new).and_return(checker)
+      expect { cli.run }.to output(/#{Regexp.escape(Flickarr::VERSION)}/o).to_stdout
     end
   end
 
@@ -70,7 +85,8 @@ RSpec.describe Flickarr::CLI do
     end
 
     it 'reports when no config file exists' do
-      cli = described_class.new(['config'], config_path: '/tmp/nonexistent-flickarr.yml')
+      path = File.join(Dir.tmpdir, "flickarr-nonexistent-#{Process.pid}-#{rand(1_000_000)}.yml")
+      cli = described_class.new(['config'], config_path: path)
       expect { cli.run }.to output(/No config file found/).to_stdout
     end
   end

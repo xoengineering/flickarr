@@ -2,6 +2,7 @@
 
 - Add `flickarr version` / `-v` / `--version` command
 - Show version header in help output
+- Check for gem updates: always on `version` and `status`, periodically (daily) after other commands
 
 ## [0.1.4] - 2026-03-22
 
