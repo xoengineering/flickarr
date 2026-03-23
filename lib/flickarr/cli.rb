@@ -35,7 +35,7 @@ module Flickarr
       when 'export:photos'                                 then run_export_posts(media: 'photos')
       when 'export:profile'                                then run_export_profile
       when 'export:videos'                                 then run_export_posts(media: 'videos')
-      when '-v', '--version', 'version'                    then puts Flickarr::VERSION
+      when '-v', '--version', 'version'                    then run_version
       when 'init'                                          then run_init
       when 'open'                                          then run_open
       when 'path'                                          then run_path
@@ -352,6 +352,10 @@ module Flickarr
       Dir.glob(pattern).count do |path|
         !path.include?('/Profile/') && !path.include?('/Sets/') && !path.include?('/Collections/')
       end
+    end
+
+    def run_version
+      puts Flickarr::VERSION
     end
 
     def count_subdirs path
