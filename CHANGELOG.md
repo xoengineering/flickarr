@@ -1,11 +1,12 @@
 ## [Unreleased]
 
+- Add `version` and `help` commands to help output
+
 ## [0.1.5] - 2026-03-23
 
 - Add `flickarr version` / `-v` / `--version` command
 - Show version header in help output
 - Check for gem updates: always on `version` and `status`, periodically (daily) after other commands
-- Add `version` and `help` commands to help output
 
 ## [0.1.4] - 2026-03-22
 
