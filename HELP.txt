@@ -48,3 +48,6 @@ COMMANDS:
   export:collections        Export all collections (groups of albums)
   export:collections <URL>  Export a single collection (groups of albums) with references to albums
   export:profile            Export Flickr profile to archive
+
+  help, -h, --help          Show this help
+  version, -v, --version    Show version (checks for updates)
