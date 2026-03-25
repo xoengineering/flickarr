@@ -554,6 +554,185 @@ RSpec.describe Flickarr::CLI do
     end
   end
 
+  describe 'transient Flickr API error retry' do
+    it 'retries on transient Flickr::FailedResponse during page fetch' do
+      dir = File.join(Dir.tmpdir, "flickarr-cli-test-#{Process.pid}")
+      config_path = File.join(dir, 'config.yml')
+      FileUtils.mkdir_p(dir)
+
+      config = Flickarr::Config.new
+      config.api_key = 'test-key'
+      config.shared_secret = 'test-secret'
+      config.access_token = 'token'
+      config.access_secret = 'secret'
+      config.user_nsid = '123@N00'
+      config.username = 'testuser'
+      config.library_path = File.join(dir, 'library')
+      config.save(config_path)
+
+      flickr_instance = double('Flickr')
+      allow(Flickr).to receive(:new).and_return(flickr_instance)
+      allow(flickr_instance).to receive(:access_token=)
+      allow(flickr_instance).to receive(:access_secret=)
+
+      photos_api = double('photos')
+      allow(flickr_instance).to receive(:photos).and_return(photos_api)
+
+      list_photo = double('list_photo', id: '111', title: 'Test', media: 'photo',
+                                        originalformat: 'jpg', datetaken: '2024-03-15 14:30:00',
+                                        datetakenunknown: '0', dateupload: '1710500000')
+      list_response = double('list_response', pages: 1, total: 1)
+      allow(list_response).to receive(:each).and_yield(list_photo)
+
+      transient_error = Flickr::FailedResponse.new(
+        'Sorry, the Flickr API service is not currently available.', '105', 'flickr.people.getPhotos'
+      )
+
+      call_count = 0
+      allow(photos_api).to receive(:search) do
+        call_count += 1
+        raise transient_error if call_count == 1
+
+        list_response
+      end
+
+      dates = double('dates', taken: '2024-03-15 14:30:00', posted: '1710500000', takenunknown: 0, lastupdate: '1710600000')
+      owner = double('owner', nsid: '123@N00', realname: 'Test', username: 'testuser')
+      vis = double('visibility', isfamily: 0, isfriend: 0, ispublic: 1)
+      photo_url = double('url', type: 'photopage', to_s: 'https://www.flickr.com/photos/testuser/111/')
+      info = double(
+        'info',
+        dates: dates, description: 'A', id: '111', license: '0', media: 'photo',
+        originalformat: 'jpg', owner: owner, tags: double('tags', tag: []),
+        title: 'Test', urls: double('urls', url: [photo_url]), views: '0', visibility: vis
+      )
+      original = double('size', height: 1200, label: 'Original',
+                                source: 'https://live.staticflickr.com/o.jpg', media: 'photo', width: 1600)
+      sizes = double('sizes', size: [original])
+      exif = double('exif', camera: 'Canon', exif: [])
+
+      allow(photos_api).to receive_messages(getInfo: info, getSizes: sizes, getExif: exif)
+      allow(Down).to receive(:download)
+
+      cli = described_class.new(['export:photos'], config_path: config_path)
+      allow(cli).to receive(:sleep)
+
+      expect { cli.run }.to output(/Downloaded photo 111/).to_stdout
+    ensure
+      FileUtils.rm_rf(dir)
+    end
+
+    it 'retries on transient Flickr::FailedResponse during single post export' do
+      dir = File.join(Dir.tmpdir, "flickarr-cli-test-#{Process.pid}")
+      config_path = File.join(dir, 'config.yml')
+      FileUtils.mkdir_p(dir)
+
+      config = Flickarr::Config.new
+      config.api_key = 'test-key'
+      config.shared_secret = 'test-secret'
+      config.access_token = 'token'
+      config.access_secret = 'secret'
+      config.user_nsid = '123@N00'
+      config.username = 'testuser'
+      config.library_path = File.join(dir, 'library')
+      config.save(config_path)
+
+      flickr_instance = double('Flickr')
+      allow(Flickr).to receive(:new).and_return(flickr_instance)
+      allow(flickr_instance).to receive(:access_token=)
+      allow(flickr_instance).to receive(:access_secret=)
+
+      photos_api = double('photos')
+      allow(flickr_instance).to receive(:photos).and_return(photos_api)
+
+      list_photo = double('list_photo', id: '111', title: 'Test', media: 'photo',
+                                        originalformat: 'jpg', datetaken: '2024-03-15 14:30:00',
+                                        datetakenunknown: '0', dateupload: '1710500000')
+      list_response = double('list_response', pages: 1, total: 1)
+      allow(list_response).to receive(:each).and_yield(list_photo)
+      allow(photos_api).to receive(:search).and_return(list_response)
+
+      transient_error = Flickr::FailedResponse.new(
+        'Sorry, the Flickr API service is not currently available.', '105', 'flickr.photos.getInfo'
+      )
+
+      dates = double('dates', taken: '2024-03-15 14:30:00', posted: '1710500000', takenunknown: 0, lastupdate: '1710600000')
+      owner = double('owner', nsid: '123@N00', realname: 'Test', username: 'testuser')
+      vis = double('visibility', isfamily: 0, isfriend: 0, ispublic: 1)
+      photo_url = double('url', type: 'photopage', to_s: 'https://www.flickr.com/photos/testuser/111/')
+      info = double(
+        'info',
+        dates: dates, description: 'A', id: '111', license: '0', media: 'photo',
+        originalformat: 'jpg', owner: owner, tags: double('tags', tag: []),
+        title: 'Test', urls: double('urls', url: [photo_url]), views: '0', visibility: vis
+      )
+      original = double('size', height: 1200, label: 'Original',
+                                source: 'https://live.staticflickr.com/o.jpg', media: 'photo', width: 1600)
+      sizes = double('sizes', size: [original])
+      exif = double('exif', camera: 'Canon', exif: [])
+
+      info_call_count = 0
+      allow(photos_api).to receive(:getInfo) do
+        info_call_count += 1
+        raise transient_error if info_call_count == 1
+
+        info
+      end
+      allow(photos_api).to receive_messages(getSizes: sizes, getExif: exif)
+      allow(Down).to receive(:download)
+
+      cli = described_class.new(['export:photos'], config_path: config_path)
+      allow(cli).to receive(:sleep)
+
+      expect { cli.run }.to output(/Downloaded photo 111/).to_stdout
+    ensure
+      FileUtils.rm_rf(dir)
+    end
+
+    it 'does not retry on permanent Flickr::FailedResponse' do
+      dir = File.join(Dir.tmpdir, "flickarr-cli-test-#{Process.pid}")
+      config_path = File.join(dir, 'config.yml')
+      FileUtils.mkdir_p(dir)
+
+      config = Flickarr::Config.new
+      config.api_key = 'test-key'
+      config.shared_secret = 'test-secret'
+      config.access_token = 'token'
+      config.access_secret = 'secret'
+      config.user_nsid = '123@N00'
+      config.username = 'testuser'
+      config.library_path = File.join(dir, 'library')
+      config.save(config_path)
+
+      flickr_instance = double('Flickr')
+      allow(Flickr).to receive(:new).and_return(flickr_instance)
+      allow(flickr_instance).to receive(:access_token=)
+      allow(flickr_instance).to receive(:access_secret=)
+
+      photos_api = double('photos')
+      allow(flickr_instance).to receive(:photos).and_return(photos_api)
+
+      list_photo = double('list_photo', id: '111', title: 'Test', media: 'photo',
+                                        originalformat: 'jpg', datetaken: '2024-03-15 14:30:00',
+                                        datetakenunknown: '0', dateupload: '1710500000')
+      list_response = double('list_response', pages: 1, total: 1)
+      allow(list_response).to receive(:each).and_yield(list_photo)
+      allow(photos_api).to receive(:search).and_return(list_response)
+
+      permanent_error = Flickr::FailedResponse.new(
+        'Photo not found (invalid ID)', '1', 'flickr.photos.getInfo'
+      )
+      allow(photos_api).to receive(:getInfo).and_raise(permanent_error)
+
+      cli = described_class.new(['export:photos'], config_path: config_path)
+      allow(cli).to receive(:sleep)
+
+      expect { cli.run }.to output(/Error on post 111/).to_stderr
+    ensure
+      FileUtils.rm_rf(dir)
+    end
+  end
+
   describe 'export:profile command' do
     it 'fetches profile info and writes to archive' do
       dir = File.join(Dir.tmpdir, "flickarr-cli-test-#{Process.pid}")

@@ -510,6 +510,18 @@ module Flickarr
             end
             warn "Failed to fetch page #{page} after retries: #{e.message}"
             break
+          rescue Flickr::FailedResponse => e
+            if transient_flickr_error?(e)
+              page_retries -= 1
+              if page_retries.positive?
+                warn "Transient API error fetching page #{page}: #{e.message} — retrying in 5s (#{page_retries} left)"
+                sleep 5
+                retry
+              end
+              warn "Failed to fetch page #{page} after retries: #{e.message}"
+              break
+            end
+            raise
           end
           total       = response.total.to_i
           total_pages = response.pages.to_i
@@ -600,6 +612,17 @@ module Flickarr
         log_error archive: archive, post_id: post_id, username: config.username, error: e
         return
       rescue Flickr::FailedResponse => e
+        if transient_flickr_error?(e)
+          retries -= 1
+          if retries.positive?
+            warn "Transient API error on post #{post_id}: #{e.message} — retrying in 5s (#{retries} left)"
+            sleep 5
+            retry
+          end
+          warn "Failed post #{post_id} after retries: #{e.message}"
+          log_error archive: archive, post_id: post_id, username: config.username, error: e
+          return
+        end
         warn "Error on post #{post_id}: #{e.message}"
         log_error archive: archive, post_id: post_id, username: config.username, error: e
         return
@@ -616,6 +639,13 @@ module Flickarr
       when :overwritten then puts "Re-downloaded #{post.media} #{post_id} to #{path} (#{count}/#{total})"
       when :skipped     then puts "Skipped #{post.media} #{post_id} (#{count}/#{total})"
       end
+    end
+
+    def transient_flickr_error? error
+      message = error.message.to_s.downcase
+      code    = error.respond_to?(:code) ? error.code.to_s : ''
+
+      code == '105' || message.include?('not currently available') || message.include?('service unavailable')
     end
 
     def log_error archive:, post_id:, username:, error:
