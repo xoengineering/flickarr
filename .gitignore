@@ -2,7 +2,6 @@
 /.yardoc
 /_yardoc/
 /coverage/
-/doc/
 /pkg/
 /spec/reports/
 /tmp/
@@ -11,3 +10,4 @@
 .rspec_status
 
 /vendor/
+.DS_Store

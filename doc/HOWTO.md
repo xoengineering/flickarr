@@ -22,17 +22,24 @@ gem install flickarr
 
 You need your own Flickr API key and secret. Flickarr uses these to authenticate with the Flickr API on your behalf.
 
-1. Go to https://flickr.com/services/apps/create/
-2. Click "Apply for a Non-Commercial Key"
+1. Go to https://flickr.com/services/apps/create and click the [Request an API Key](https://flickr.com/services/apps/create/apply) link in the **Get your API Key** section.
+   ![Screenshot of Flickr App Gardn page](how-to-1.png)
+
+2. On the next page https://flickr.com/services/apps/create/apply click "[Apply for a Non-Commercial Key](https://flickr.com/services/apps/create/noncommercial)"
+
+   ![Screenshot of Flickr app application page](how-to-2.png)
+
 3. Fill in the form:
    - **Application Name**: anything you want (e.g. "Flickarr Export")
    - **Description**: anything (e.g. "Personal archive export")
+
+   ![Screenshot of Flickr API key creation page](how-to-3.png)
+
 4. Submit the form
+
 5. Copy your **Key** and **Secret** from the confirmation page
 
-![Screenshot of Flickr API key creation page](doc/howto/3.png)
-
-![Screenshot of Flickr API key and secret confirmation page](doc/howto/4.png)
+![Screenshot of Flickr API key and secret confirmation page](how-to-4.png)
 
 ## 4. Initialize Flickarr
 
@@ -74,11 +81,12 @@ This starts the OAuth flow:
 2. Flickr asks you to authorize the app — click "OK, I'll Authorize It"
 3. Flickr shows you a verification code (9 digits, like `888-675-309`)
 4. Copy that code
+
+   ![Screenshot of Flickr verification page](how-to-5.png)
+
 5. Paste the code back into your terminal
 
-![Screenshot of Flickr OAuth authorization page](doc/howto/1.png)
-
-![Screenshot of Flickr verification code page](doc/howto/2.png)
+   ![Screenshot of Flickr auhorization code page](how-to-6.png)
 
 After authenticating, your access tokens, username, and user ID are saved to the config file. You only need to do this once.
 
