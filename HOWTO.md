@@ -22,7 +22,7 @@ gem install flickarr
 
 You need your own Flickr API key and secret. Flickarr uses these to authenticate with the Flickr API on your behalf.
 
-1. Go to https://www.flickr.com/services/apps/create/
+1. Go to https://flickr.com/services/apps/create/
 2. Click "Apply for a Non-Commercial Key"
 3. Fill in the form:
    - **Application Name**: anything you want (e.g. "Flickarr Export")
@@ -30,8 +30,9 @@ You need your own Flickr API key and secret. Flickarr uses these to authenticate
 4. Submit the form
 5. Copy your **Key** and **Secret** from the confirmation page
 
-<!-- TODO: screenshot of Flickr API key creation page -->
-<!-- TODO: screenshot of Flickr API key and secret confirmation page -->
+![Screenshot of Flickr API key creation page](doc/howto/3.png)
+
+![Screenshot of Flickr API key and secret confirmation page](doc/howto/4.png)
 
 ## 4. Initialize Flickarr
 
@@ -75,8 +76,9 @@ This starts the OAuth flow:
 4. Copy that code
 5. Paste the code back into your terminal
 
-<!-- TODO: screenshot of Flickr OAuth authorization page -->
-<!-- TODO: screenshot of Flickr verification code page -->
+![Screenshot of Flickr OAuth authorization page](doc/howto/1.png)
+
+![Screenshot of Flickr verification code page](doc/howto/2.png)
 
 After authenticating, your access tokens, username, and user ID are saved to the config file. You only need to do this once.
 
@@ -134,7 +136,7 @@ flickarr export:albums
 Export a single album by URL:
 
 ```sh
-flickarr export:sets https://www.flickr.com/photos/USERNAME/sets/72157718538273371/
+flickarr export:sets https://flickr.com/photos/USERNAME/sets/72157718538273371/
 ```
 
 Collections (groups of albums) work the same way:
@@ -146,7 +148,7 @@ flickarr export:collections
 Export a single collection by URL:
 
 ```sh
-flickarr export:collections https://www.flickr.com/photos/USERNAME/collections/72157666222057746/
+flickarr export:collections https://flickr.com/photos/USERNAME/collections/72157666222057746/
 ```
 
 ## 10. Check your progress

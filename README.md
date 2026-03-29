@@ -49,7 +49,7 @@ flickarr auth
 flickarr export
 ```
 
-See [HOWTO.md](HOWTO.md) for detailed setup instructions.
+See [doc/HOWTO.md](doc/HOWTO.md) for detailed setup instructions.
 
 ## Usage
 
