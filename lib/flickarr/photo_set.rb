@@ -42,7 +42,8 @@ module Flickarr
     end
 
     def dirname
-      [id, slug].compact.join '_'
+      truncated = Post.truncate_slug(slug, id: id, ext: '')
+      [id, truncated].compact.join '_'
     end
 
     def photos_to_a
@@ -110,7 +111,8 @@ module Flickarr
     def relative_photo_path item
       ext  = item.media.to_s == 'video' ? 'mp4' : item.originalformat.to_s
       slug = item.title.to_s.slugify
-      base = [item.id, slug.empty? ? nil : slug].compact.join('_')
+      slug = Post.truncate_slug(slug, id: item.id, ext: ext)
+      base = [item.id, slug].compact.join('_')
       date = if item.datetakenunknown.to_i.zero?
                Date.parse item.datetaken
              else

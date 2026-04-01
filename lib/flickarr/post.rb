@@ -8,6 +8,7 @@ require 'yaml'
 module Flickarr
   class Post
     FLICKR_URL_PATTERN = %r{\Ahttps?://(?:www\.)?flickr\.com/photos/[^/]+/(\d+)}
+    MAX_FILENAME_BYTES = 255
 
     def self.build info:, sizes:, exif: nil
       case info.media.to_s
@@ -25,12 +26,23 @@ module Flickarr
       id       = item.id
       title    = item.title.to_s
       slug     = title.slugify
-      basename = [id, slug.empty? ? nil : slug].compact.join('_')
       ext      = item.media.to_s == 'video' ? 'mp4' : item.originalformat.to_s
+      slug     = truncate_slug(slug, id: id, ext: ext)
+      basename = [id, slug].compact.join('_')
       date     = compute_date_from_list_item(item)
       folder   = date.strftime '%Y/%m/%d'
 
       File.join archive_path, folder, "#{basename}.#{ext}"
+    end
+
+    def self.truncate_slug slug, id:, ext:
+      return nil if slug.nil? || slug.empty?
+
+      # "id_slug.ext" must fit in MAX_FILENAME_BYTES
+      max_slug = MAX_FILENAME_BYTES - id.to_s.bytesize - ext.to_s.bytesize - 2 # underscore + dot
+      return slug if slug.bytesize <= max_slug
+
+      slug[0, max_slug].chomp('-')
     end
 
     def self.compute_date_from_list_item item
@@ -75,7 +87,9 @@ module Flickarr
     end
 
     def basename
-      [id, slug].compact.join '_'
+      longest_ext = [extension, 'yaml'].max_by(&:bytesize)
+      truncated = self.class.truncate_slug(slug, id: id, ext: longest_ext)
+      [id, truncated].compact.join '_'
     end
 
     def date_taken

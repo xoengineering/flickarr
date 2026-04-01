@@ -28,13 +28,15 @@ module Flickarr
     end
 
     def dirname
-      [id, slug].compact.join '_'
+      truncated = Post.truncate_slug(slug, id: id, ext: '')
+      [id, truncated].compact.join '_'
     end
 
     def sets_to_a
       @set_refs.map do |s|
         set_slug = s.title.to_s.slugify
-        set_dirname = [s.id, set_slug.empty? ? nil : set_slug].compact.join('_')
+        set_slug = Post.truncate_slug(set_slug, id: s.id, ext: '')
+        set_dirname = [s.id, set_slug].compact.join('_')
 
         {
           description: s.description.to_s,

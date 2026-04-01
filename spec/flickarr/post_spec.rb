@@ -47,6 +47,23 @@ RSpec.describe Flickarr::Post do
 
       expect(path).to eq('/archive/2024/03/15/111_my-video.mp4')
     end
+
+    it 'truncates very long slugs to fit within 255-byte filename limit' do
+      long_title = 'a ' * 200
+      item = double(
+        'list_item',
+        datetaken: '2024-03-15 14:30:00', datetakenunknown: '0', dateupload: '1710500000',
+        id: '2771062597', media: 'photo', originalformat: 'jpg', title: long_title
+      )
+
+      path = described_class.file_path_from_list_item(item, archive_path: '/archive')
+      filename = File.basename(path)
+
+      expect(filename.bytesize).to be <= 255
+      expect(filename).to start_with('2771062597_')
+      expect(filename).to end_with('.jpg')
+      expect(filename).not_to end_with('-.jpg')
+    end
   end
 
   describe '.build' do
