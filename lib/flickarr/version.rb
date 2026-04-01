@@ -3,7 +3,7 @@ require 'net/http'
 require 'uri'
 
 module Flickarr
-  VERSION = '0.1.5'.freeze
+  VERSION = '0.1.6'.freeze
 
   class Version
     RUBYGEMS_URL = 'https://rubygems.org/api/v1/gems/flickarr.json'.freeze
