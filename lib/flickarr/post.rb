@@ -78,12 +78,15 @@ module Flickarr
       @visibility  = extract_visibility info
       @owner       = extract_owner info
 
-      @dates    = info.dates
-      @location = extract_location info
-      @sizes    = sizes
-      @urls     = extract_urls info
-      @camera   = exif&.camera.to_s if exif
-      @exif     = extract_exif exif
+      @dates          = info.dates
+      @farm           = info.respond_to?(:farm) ? info.farm.to_s : nil
+      @location       = extract_location info
+      @originalsecret = info.respond_to?(:originalsecret) ? info.originalsecret.to_s : nil
+      @server         = info.respond_to?(:server) ? info.server.to_s : nil
+      @sizes          = sizes
+      @urls           = extract_urls info
+      @camera         = exif&.camera.to_s if exif
+      @exif           = extract_exif exif
     end
 
     def basename

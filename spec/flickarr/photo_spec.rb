@@ -24,11 +24,14 @@ RSpec.describe Flickarr::Photo do
       'info',
       dates:          dates,
       description:    'This is my cat',
+      farm:           66,
       id:             '3839885270',
       license:        '4',
       media:          'photo',
       originalformat: 'jpg',
+      originalsecret: 'abc123secret',
       owner:          owner,
+      server:         '65535',
       tags:           tags,
       title:          'My Cool Cat!',
       urls:           urls,
@@ -105,6 +108,19 @@ RSpec.describe Flickarr::Photo do
       photo.download(archive_path: archive_path)
 
       expect(Down).to have_received(:download).with(photo.original_url, destination: dest)
+    end
+
+    it 'falls back to constructed URL when getSizes URL returns 410' do
+      dest = File.join(archive_path, '2024/03/15', '3839885270_my-cool-cat.jpg')
+      fallback_url = 'https://live.staticflickr.com/65535/3839885270_abc123secret_o.jpg'
+
+      allow(Down).to receive(:download).with(photo.original_url, destination: dest)
+                                       .and_raise(Down::ClientError.new('410 Gone'))
+      allow(Down).to receive(:download).with(fallback_url, destination: dest)
+
+      photo.download(archive_path: archive_path)
+
+      expect(Down).to have_received(:download).with(fallback_url, destination: dest)
     end
   end
 
