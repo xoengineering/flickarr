@@ -16,7 +16,7 @@ module Flickarr
       rescue Down::ClientError => e
         raise unless e.message.include?('410') && constructed_original_url
 
-        warn '  getSizes URL returned 410, retrying with constructed URL...'
+        warn "  Photo #{id}: getSizes URL returned 410, retrying with constructed URL..."
         Down.download constructed_original_url, destination: dest
       end
     end
