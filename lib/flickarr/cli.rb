@@ -464,7 +464,14 @@ module Flickarr
         return
       end
 
-      status = post.write(archive_path: archive, overwrite: @overwrite)
+      begin
+        status = post.write(archive_path: archive, overwrite: @overwrite)
+      rescue Down::Error => e
+        warn "Download error on post #{post_id}: #{e.message}"
+        log_error archive: archive, post_id: post_id, username: config.username, error: e
+        return
+      end
+
       path = File.join archive, post.folder_path
 
       case status

@@ -521,6 +521,66 @@ RSpec.describe Flickarr::CLI do
       FileUtils.rm_rf(dir)
     end
 
+    it 'handles 410 Gone download errors gracefully' do
+      dir = File.join(Dir.tmpdir, "flickarr-cli-test-#{Process.pid}")
+      config_path = File.join(dir, 'config.yml')
+      File.join(dir, 'library', 'testuser')
+      FileUtils.mkdir_p(dir)
+
+      config = Flickarr::Config.new
+      config.api_key = 'test-key'
+      config.shared_secret = 'test-secret'
+      config.access_token = 'token'
+      config.access_secret = 'secret'
+      config.user_nsid = '123@N00'
+      config.username = 'testuser'
+      config.library_path = File.join(dir, 'library')
+      config.save(config_path)
+
+      flickr_instance = double('Flickr')
+      allow(Flickr).to receive(:new).and_return(flickr_instance)
+      allow(flickr_instance).to receive(:access_token=)
+      allow(flickr_instance).to receive(:access_secret=)
+
+      photos_api = double('photos')
+      allow(flickr_instance).to receive(:photos).and_return(photos_api)
+
+      dates = double('dates', taken: '2024-03-15 14:30:00', posted: '1710500000', takenunknown: 0, lastupdate: '1710600000')
+      owner = double('owner', nsid: '123@N00', realname: 'Test User', username: 'testuser')
+      visibility = double('visibility', isfamily: 0, isfriend: 0, ispublic: 1)
+      photo_url = double('url', type: 'photopage', to_s: 'https://www.flickr.com/photos/testuser/3839885270/')
+      info_response = double(
+        'info',
+        dates:          dates,
+        description:    'A cat',
+        id:             '3839885270',
+        license:        '0',
+        media:          'photo',
+        originalformat: 'jpg',
+        owner:          owner,
+        tags:           double('tags', tag: []),
+        title:          'My Cat',
+        urls:           double('urls', url: [photo_url]),
+        views:          '0',
+        visibility:     visibility
+      )
+      original = double('size', height: 1200, label: 'Original', source: 'https://live.staticflickr.com/o.jpg',
+                                media: 'photo', width: 1600)
+      sizes_response = double('sizes', size: [original])
+      exif_response = double('exif_response', camera: 'Canon', exif: [])
+
+      allow(photos_api).to receive(:getInfo).with(photo_id: '3839885270').and_return(info_response)
+      allow(photos_api).to receive(:getSizes).with(photo_id: '3839885270').and_return(sizes_response)
+      allow(photos_api).to receive(:getExif).with(photo_id: '3839885270').and_return(exif_response)
+      allow(Down).to receive(:download).and_raise(Down::ClientError.new('410 Gone'))
+
+      url = 'https://www.flickr.com/photos/testuser/3839885270'
+      cli = described_class.new(['export:photo', url], config_path: config_path)
+      expect { cli.run }.to output(/Download error.*3839885270.*410 Gone/).to_stderr
+    ensure
+      FileUtils.rm_rf(dir)
+    end
+
     it 'reports error when Flickr API rejects the photo ID' do
       dir = File.join(Dir.tmpdir, "flickarr-cli-test-#{Process.pid}")
       config_path = File.join(dir, 'config.yml')
