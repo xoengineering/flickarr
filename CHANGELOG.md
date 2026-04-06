@@ -1,12 +1,13 @@
 ## [Unreleased]
 
+- Handle download errors (e.g. 410 Gone) gracefully in single-photo export instead of crashing
+- Retry 410 Gone photo downloads using a URL constructed from `getInfo` fields (`server`, `originalsecret`)
+
 ## [0.1.6] - 2026-03-31
 
 - Add `version` and `help` commands to help output
 - Retry transient Flickr API errors ("service not currently available") with backoff, instead of crashing
 - Truncate very long slugs to prevent `Errno::ENAMETOOLONG` on filenames exceeding 255 bytes
-- Handle download errors (e.g. 410 Gone) gracefully in single-photo export instead of crashing
-- Retry 410 Gone photo downloads using a URL constructed from `getInfo` fields (`server`, `originalsecret`)
 
 ## [0.1.5] - 2026-03-23
 
