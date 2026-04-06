@@ -147,9 +147,19 @@ module Flickarr
       return :skipped if existed && !overwrite
 
       FileUtils.mkdir_p dir
-      download archive_path: archive_path
+
+      download_failed = false
+      begin
+        download archive_path: archive_path
+      rescue Down::Error => e
+        warn "Download failed for #{media} #{id}: #{e.message}"
+        download_failed = true
+      end
+
       write_json archive_path: archive_path
       write_yaml archive_path: archive_path
+
+      return :download_failed if download_failed
 
       existed ? :overwritten : :created
     end

@@ -163,6 +163,16 @@ RSpec.describe Flickarr::Photo do
       expect(result).to eq(:overwritten)
       expect(Down).to have_received(:download)
     end
+
+    it 'still writes json and yaml when download fails' do
+      allow(Down).to receive(:download).and_raise(Down::Error.new('410 Gone'))
+
+      result = photo.write(archive_path: archive_path)
+
+      expect(result).to eq(:download_failed)
+      expect(File.exist?(File.join(photo_dir, '3839885270_my-cool-cat.json'))).to be true
+      expect(File.exist?(File.join(photo_dir, '3839885270_my-cool-cat.yaml'))).to be true
+    end
   end
 end
 # rubocop:enable RSpec/VerifiedDoubles

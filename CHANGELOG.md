@@ -1,5 +1,7 @@
 ## [Unreleased]
 
+- Always write JSON/YAML metadata even when media download fails
+
 ## [0.1.7] - 2026-04-05
 
 - Handle download errors (e.g. 410 Gone) gracefully in single-photo export instead of crashing

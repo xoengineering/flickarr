@@ -576,7 +576,7 @@ RSpec.describe Flickarr::CLI do
 
       url = 'https://www.flickr.com/photos/testuser/3839885270'
       cli = described_class.new(['export:photo', url], config_path: config_path)
-      expect { cli.run }.to output(/Download error.*3839885270.*410 Gone/).to_stderr
+      expect { cli.run }.to output(/Saved metadata.*3839885270.*download failed/).to_stderr
     ensure
       FileUtils.rm_rf(dir)
     end

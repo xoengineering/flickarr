@@ -475,9 +475,13 @@ module Flickarr
       path = File.join archive, post.folder_path
 
       case status
-      when :created     then puts "Downloaded #{post.media} #{post_id} to #{path}"
-      when :overwritten then puts "Re-downloaded #{post.media} #{post_id} to #{path}"
-      when :skipped     then puts "Skipped #{post.media} #{post_id} (already exists at #{path})"
+      when :created then puts "Downloaded #{post.media} #{post_id} to #{path}"
+      when :download_failed
+        warn "Saved metadata for #{post.media} #{post_id} to #{path} (media download failed)"
+        log_error archive: archive, post_id: post_id, username: config.username,
+                  error: StandardError.new('Media download failed')
+      when :overwritten     then puts "Re-downloaded #{post.media} #{post_id} to #{path}"
+      when :skipped         then puts "Skipped #{post.media} #{post_id} (already exists at #{path})"
       end
     end
 
@@ -642,9 +646,13 @@ module Flickarr
       path = File.join archive, post.folder_path
 
       case status
-      when :created     then puts "Downloaded #{post.media} #{post_id} to #{path} (#{count}/#{total})"
-      when :overwritten then puts "Re-downloaded #{post.media} #{post_id} to #{path} (#{count}/#{total})"
-      when :skipped     then puts "Skipped #{post.media} #{post_id} (#{count}/#{total})"
+      when :created then puts "Downloaded #{post.media} #{post_id} to #{path} (#{count}/#{total})"
+      when :download_failed
+        warn "Saved metadata for #{post.media} #{post_id} to #{path} (media download failed) (#{count}/#{total})"
+        log_error archive: archive, post_id: post_id, username: config.username,
+                  error: StandardError.new('Media download failed')
+      when :overwritten     then puts "Re-downloaded #{post.media} #{post_id} to #{path} (#{count}/#{total})"
+      when :skipped         then puts "Skipped #{post.media} #{post_id} (#{count}/#{total})"
       end
     end
 
